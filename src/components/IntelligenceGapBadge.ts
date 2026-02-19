@@ -9,7 +9,7 @@ const MAX_VISIBLE_FINDINGS = 10;
 const SORT_TIME_TOLERANCE_MS = 60000;
 const REFRESH_INTERVAL_MS = 10000;
 const ALERT_HOURS = 6;
-const STORAGE_KEY = 'worldmonitor-intel-findings';
+const STORAGE_KEY = 'globalpulse-intel-findings';
 
 type FindingSource = 'signal' | 'alert';
 

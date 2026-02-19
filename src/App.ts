@@ -140,7 +140,7 @@ export interface CountryBriefSignals {
 export class App {
   private container: HTMLElement;
   private readonly PANEL_ORDER_KEY = 'panel-order';
-  private readonly PANEL_SPANS_KEY = 'worldmonitor-panel-spans';
+  private readonly PANEL_SPANS_KEY = 'globalpulse-panel-spans';
   private map: MapContainer | null = null;
   private panels: Record<string, Panel> = {};
   private newsPanels: Record<string, NewsPanel> = {};
@@ -206,13 +206,13 @@ export class App {
     const defaultLayers = this.isMobile ? MOBILE_DEFAULT_MAP_LAYERS : DEFAULT_MAP_LAYERS;
 
     // Check if variant changed - reset all settings to variant defaults
-    const storedVariant = localStorage.getItem('worldmonitor-variant');
+    const storedVariant = localStorage.getItem('globalpulse-variant');
     const currentVariant = SITE_VARIANT;
     console.log(`[App] Variant check: stored="${storedVariant}", current="${currentVariant}"`);
     if (storedVariant !== currentVariant) {
       // Variant changed - use defaults for new variant, clear old settings
       console.log('[App] Variant changed - resetting to defaults');
-      localStorage.setItem('worldmonitor-variant', currentVariant);
+      localStorage.setItem('globalpulse-variant', currentVariant);
       localStorage.removeItem(STORAGE_KEYS.mapLayers);
       localStorage.removeItem(STORAGE_KEYS.panels);
       localStorage.removeItem(this.PANEL_ORDER_KEY);
@@ -229,7 +229,7 @@ export class App {
 
       // One-time migration: reorder panels for existing users (v1.9 panel layout)
       // Puts live-news, insights, strategic-posture, cii, strategic-risk at the top
-      const PANEL_ORDER_MIGRATION_KEY = 'worldmonitor-panel-order-v1.9';
+      const PANEL_ORDER_MIGRATION_KEY = 'globalpulse-panel-order-v1.9';
       if (!localStorage.getItem(PANEL_ORDER_MIGRATION_KEY)) {
         const savedOrder = localStorage.getItem(this.PANEL_ORDER_KEY);
         if (savedOrder) {
@@ -256,7 +256,7 @@ export class App {
 
       // Tech variant migration: move insights to top (after live-news)
       if (currentVariant === 'tech') {
-        const TECH_INSIGHTS_MIGRATION_KEY = 'worldmonitor-tech-insights-top-v1';
+        const TECH_INSIGHTS_MIGRATION_KEY = 'globalpulse-tech-insights-top-v1';
         if (!localStorage.getItem(TECH_INSIGHTS_MIGRATION_KEY)) {
           const savedOrder = localStorage.getItem(this.PANEL_ORDER_KEY);
           if (savedOrder) {
@@ -282,7 +282,7 @@ export class App {
 
     // One-time migration: clear stale panel ordering and sizing state that can
     // leave non-draggable gaps in mixed-size layouts on wide screens.
-    const LAYOUT_RESET_MIGRATION_KEY = 'worldmonitor-layout-reset-v2.5';
+    const LAYOUT_RESET_MIGRATION_KEY = 'globalpulse-layout-reset-v2.5';
     if (!localStorage.getItem(LAYOUT_RESET_MIGRATION_KEY)) {
       const hadSavedOrder = !!localStorage.getItem(this.PANEL_ORDER_KEY);
       const hadSavedSpans = !!localStorage.getItem(this.PANEL_SPANS_KEY);
@@ -2613,7 +2613,7 @@ export class App {
           const variant = link.dataset.variant;
           if (variant && variant !== SITE_VARIANT) {
             e.preventDefault();
-            localStorage.setItem('worldmonitor-variant', variant);
+            localStorage.setItem('globalpulse-variant', variant);
             window.location.reload();
           }
         });

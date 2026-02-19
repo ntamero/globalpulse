@@ -2,7 +2,7 @@ import { invalidateColorCache } from './theme-colors';
 
 export type Theme = 'dark' | 'light';
 
-const STORAGE_KEY = 'worldmonitor-theme';
+const STORAGE_KEY = 'globalpulse-theme';
 const DEFAULT_THEME: Theme = 'dark';
 
 /**

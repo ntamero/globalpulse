@@ -7,7 +7,7 @@ type CacheEnvelope<T> = {
   data: T;
 };
 
-const CACHE_PREFIX = 'worldmonitor-persistent-cache:';
+const CACHE_PREFIX = 'globalpulse-persistent-cache:';
 
 export async function getPersistentCache<T>(key: string): Promise<CacheEnvelope<T> | null> {
   if (isDesktopRuntime()) {

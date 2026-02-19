@@ -12,7 +12,7 @@ export interface PanelOptions {
   infoTooltip?: string;
 }
 
-const PANEL_SPANS_KEY = 'worldmonitor-panel-spans';
+const PANEL_SPANS_KEY = 'globalpulse-panel-spans';
 
 function loadPanelSpans(): Record<string, number> {
   try {
