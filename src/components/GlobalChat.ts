@@ -10,8 +10,6 @@
 import { chatService, type ChatChannel, type ChatMessage, type ChatUser } from '@/services/chat';
 import { escapeHtml } from '@/utils/sanitize';
 
-const DISMISSED_KEY = 'globalpulse-chat-minimized';
-
 interface ChatState {
   phase: 'closed' | 'login' | 'verify' | 'chat';
   channels: ChatChannel[];
@@ -32,7 +30,6 @@ export class GlobalChat {
   private container: HTMLElement;
   private state: ChatState;
   private cleanups: Array<() => void> = [];
-  private typingTimeout: ReturnType<typeof setTimeout> | null = null;
   private lastTypingSent = 0;
 
   constructor() {
@@ -444,7 +441,7 @@ export class GlobalChat {
   }
 
   private renderTypingIndicator(): void {
-    const el = this.container.querySelector('#gcTyping');
+    const el = this.container.querySelector('#gcTyping') as HTMLElement | null;
     if (!el) return;
     const now = Date.now();
     const names: string[] = [];
