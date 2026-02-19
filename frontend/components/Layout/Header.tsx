@@ -16,15 +16,17 @@ import {
   Sun,
   Moon,
   ChevronDown,
+  Brain,
+  Trophy,
 } from 'lucide-react';
 
 const navLinks = [
   { label: 'Monitor', href: '#top', icon: Monitor },
-  { label: 'Regions', href: '#headlines', icon: MapPin },
+  { label: 'AI & Tech', href: '#ai-tech', icon: Brain },
+  { label: 'Sports', href: '#sports', icon: Trophy },
   { label: 'Live TV', href: '#live-media', icon: Radio },
   { label: 'Timeline', href: '#timeline', icon: Clock },
   { label: 'Maps', href: '#world-map', icon: Map },
-  { label: 'About', href: '#briefing', icon: Info },
 ];
 
 const languages = [

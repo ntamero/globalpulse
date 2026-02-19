@@ -12,6 +12,8 @@ import MarketWidget from '@/components/Dashboard/MarketWidget';
 import InternetStatus from '@/components/Dashboard/InternetStatus';
 import VideoShorts from '@/components/Dashboard/VideoShorts';
 import GlobalChat from '@/components/Dashboard/GlobalChat';
+import AITechHub from '@/components/Dashboard/AITechHub';
+import SportsHub from '@/components/Dashboard/SportsHub';
 
 export default function HomePage() {
   return (
@@ -46,6 +48,16 @@ export default function HomePage() {
 
           {/* Video Shorts */}
           <VideoShorts />
+
+          {/* AI & Tech Hub */}
+          <div id="ai-tech">
+            <AITechHub />
+          </div>
+
+          {/* Sports Center */}
+          <div id="sports">
+            <SportsHub />
+          </div>
 
           {/* Latest Headlines */}
           <div id="headlines">
