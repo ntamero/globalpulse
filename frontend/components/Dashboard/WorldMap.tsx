@@ -112,7 +112,7 @@ export default function WorldMap() {
                 category: guessCategory(props.name || ''),
                 severity: Math.min(10, Math.max(3, (props.goldsteinscale ? Math.abs(props.goldsteinscale) : 5))),
                 timestamp: props.urlpubtimedate || new Date().toISOString(),
-                sources: [{ name: props.domain || 'GDELT', url: props.url || '' }],
+                sources: [props.domain || 'GDELT'],
                 is_developing: false,
                 location: { lat: coords[1], lng: coords[0], name: props.name || '', country: '' },
               });
@@ -138,7 +138,7 @@ export default function WorldMap() {
                 category: 'humanitarian',
                 severity: Math.min(10, Math.round((props.mag || 4) * 1.2)),
                 timestamp: props.time ? new Date(props.time).toISOString() : new Date().toISOString(),
-                sources: [{ name: 'USGS', url: props.url || '' }],
+                sources: ['USGS'],
                 is_developing: true,
                 location: { lat: coords[1], lng: coords[0], name: props.place || '', country: '' },
               });
