@@ -37,6 +37,11 @@ const categoryIcons: Record<string, string> = {
 export default function AIBriefing() {
   const [briefing, setBriefing] = useState<Briefing | null>(null);
   const [expanded, setExpanded] = useState(true);
+  const [hour, setHour] = useState(12);
+
+  useEffect(() => {
+    setHour(new Date().getHours());
+  }, []);
 
   useEffect(() => {
     async function loadBriefing() {
@@ -69,9 +74,6 @@ export default function AIBriefing() {
       </div>
     );
   }
-
-  const [hour, setHour] = useState(12);
-  useEffect(() => { setHour(new Date().getHours()); }, []);
 
   return (
     <div className="card glow-blue">
