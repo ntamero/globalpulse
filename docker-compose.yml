@@ -1,77 +1,31 @@
 services:
-  frontend:
+  app:
     build:
-      context: ./frontend
+      context: .
       dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
+    restart: unless-stopped
     environment:
       - NODE_ENV=production
-      - BACKEND_URL=http://backend:8000
-      - REDIS_URL=redis://redis:6379/0
-    depends_on:
-      - backend
-      - redis
-    restart: unless-stopped
-
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+      - PORT=3000
+      - VITE_VARIANT=full
+    env_file:
+      - .env
     ports:
-      - "8000:8000"
-    env_file: .env
-    environment:
-      - DATABASE_URL=postgresql://globalpulse:${DB_PASSWORD}@postgres:5432/globalpulse
-      - REDIS_URL=redis://redis:6379/0
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    restart: unless-stopped
-
-  postgres:
-    image: postgres:15-alpine
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: globalpulse
-      POSTGRES_USER: globalpulse
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    restart: unless-stopped
+      - "3000:3000"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U globalpulse"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  redis:
-    image: redis:7-alpine
-    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru --appendonly yes
-    volumes:
-      - redisdata:/data
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
 
   nginx:
     image: nginx:alpine
+    restart: unless-stopped
     ports:
       - "80:80"
-      - "443:443"
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - certbot-etc:/etc/letsencrypt:ro
     depends_on:
-      - frontend
-      - backend
-    restart: unless-stopped
-
-volumes:
-  pgdata:
-  redisdata:
-  certbot-etc:
+      app:
+        condition: service_healthy

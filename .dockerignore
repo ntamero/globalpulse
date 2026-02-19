@@ -1,0 +1,14 @@
+node_modules
+.git
+.github
+.claudedocs
+src-tauri
+e2e
+tests
+*.md
+!README.md
+new-world-monitor.png
+.env
+.env.local
+test-results
+playwright-report

@@ -1,53 +1,24 @@
-# Dependencies
 node_modules/
-__pycache__/
-*.pyc
-.venv/
-venv/
-env/
-
-# Environment
+.idea/
+.planning/
+dist/
+.DS_Store
+*.log
 .env
 .env.local
-.env.production
-
-# Build
-.next/
-out/
-dist/
-build/
-
-# Database
-*.db
-*.sqlite3
-pgdata/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Docker
-docker-compose.override.yml
-
-# Logs
-logs/
-*.log
-
-# Cache
-.cache/
-redis-data/
-
-# Coverage
-coverage/
-htmlcov/
-.coverage
-
-# Misc
-*.bak
-*.tmp
+.playwright-mcp/
+.vercel
+.claude/
+.cursor/
+CLAUDE.md
+.env.vercel-backup
+.env.vercel-export
+.agent/
+.factory/
+.windsurf/
+skills/
+ideas/
+test-results/
+src-tauri/sidecar/node/*
+!src-tauri/sidecar/node/.gitkeep
+server/node_modules/

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>World Monitor Settings</title>
+    <script>(function(){try{var t=localStorage.getItem('worldmonitor-theme');if(t==='light')document.documentElement.dataset.theme='light';}catch(e){}document.documentElement.classList.add('no-transition');})()</script>
+  </head>
+  <body>
+    <div class="settings-shell">
+      <div class="settings-tabs" role="tablist">
+        <button class="settings-tab active" role="tab" aria-selected="true" aria-controls="tabPanelKeys" data-tab="keys">API Keys</button>
+        <button class="settings-tab" role="tab" aria-selected="false" aria-controls="tabPanelDebug" data-tab="debug">Debug &amp; Logs</button>
+      </div>
+      <p id="settingsActionStatus" class="settings-action-status" aria-live="polite"></p>
+      <div class="settings-tab-panels">
+        <div id="tabPanelKeys" class="settings-tab-panel active" role="tabpanel">
+          <main id="settingsApp" class="settings-content"></main>
+        </div>
+        <div id="tabPanelDebug" class="settings-tab-panel" role="tabpanel">
+          <div class="debug-actions">
+            <button id="openLogsBtn" type="button">Open Logs Folder</button>
+            <button id="openSidecarLogBtn" type="button">Open API Log</button>
+          </div>
+          <section class="settings-diagnostics" id="diagnosticsSection">
+            <header class="diag-header">
+              <h2>Diagnostics</h2>
+              <div class="diag-toggles">
+                <label><input type="checkbox" id="verboseApiLog"> Verbose Sidecar Log</label>
+                <label><input type="checkbox" id="fetchDebugLog"> Frontend Fetch Debug</label>
+              </div>
+            </header>
+            <div class="diag-traffic-bar">
+              <h3>API Traffic <span id="trafficCount"></span></h3>
+              <div class="diag-traffic-controls">
+                <label><input type="checkbox" id="autoRefreshLog" checked> Auto</label>
+                <button id="refreshLogBtn" type="button">Refresh</button>
+                <button id="clearLogBtn" type="button">Clear</button>
+              </div>
+            </div>
+            <div id="trafficLog" class="diag-traffic-log"></div>
+          </section>
+        </div>
+      </div>
+      <footer class="settings-footer">
+        <button id="cancelBtn" type="button" class="settings-btn settings-btn-secondary">Cancel</button>
+        <button id="okBtn" type="button" class="settings-btn settings-btn-primary">OK</button>
+      </footer>
+    </div>
+
+    <script type="module" src="/src/settings-main.ts"></script>
+  </body>
+</html>
