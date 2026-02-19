@@ -219,8 +219,8 @@ Rules:
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://worldmonitor.app',
-        'X-Title': 'WorldMonitor',
+        'HTTP-Referer': 'http://46.62.167.252',
+        'X-Title': 'GlobalPulse',
       },
       body: JSON.stringify({
         model: MODEL,

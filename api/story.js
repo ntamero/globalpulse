@@ -57,10 +57,10 @@ export default function handler(req, res) {
   <meta property="og:image:width" content="1200"/>
   <meta property="og:image:height" content="630"/>
   <meta property="og:url" content="${esc(storyUrl)}"/>
-  <meta property="og:site_name" content="World Monitor"/>
+  <meta property="og:site_name" content="GlobalPulse"/>
 
   <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:site" content="@WorldMonitorApp"/>
+  <meta name="twitter:site" content="@ntamero"/>
   <meta name="twitter:title" content="${esc(title)}"/>
   <meta name="twitter:description" content="${esc(description)}"/>
   <meta name="twitter:image" content="${esc(imageUrl)}"/>

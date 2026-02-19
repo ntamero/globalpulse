@@ -210,10 +210,11 @@ app.use('/api/adsb-exchange', createProxyMiddleware({
   on: { error: (err, req, res) => { if (!res.headersSent) res.status(502).json({ error: 'ADS-B proxy error' }); } },
 }));
 
-// Polymarket - proxy to worldmonitor.app Vercel edge function
+// Polymarket - proxy to gamma API
 app.use('/api/polymarket', createProxyMiddleware({
-  target: 'https://worldmonitor.app',
+  target: 'https://gamma-api.polymarket.com',
   changeOrigin: true,
+  pathRewrite: { '^/api/polymarket': '' },
   on: { error: (err, req, res) => { if (!res.headersSent) res.status(502).json({ error: 'Polymarket proxy error' }); } },
 }));
 

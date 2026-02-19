@@ -7930,7 +7930,14 @@ a.prediction-link:hover {
     display: none !important;
   }
 
-  /* Credit link styles removed - using own branding */
+  /* Hide @ntamero text on mobile, keep X icon */
+  .credit-link .credit-text {
+    display: none;
+  }
+
+  .credit-link .x-logo {
+    display: inline-block;
+  }
 
   /* Reduce header clutter on mobile */
   .header-center {
