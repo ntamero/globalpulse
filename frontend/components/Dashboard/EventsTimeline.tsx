@@ -112,13 +112,13 @@ export default function EventsTimeline() {
     if (categoryFilter !== 'all' && e.category !== categoryFilter) return false;
     if (timeFilter !== 'all') {
       const daysAgo = parseInt(timeFilter);
-      const eventDate = new Date(e.timestamp);
-      const now = new Date();
-      const diffDays = Math.floor(
-        (now.getTime() - eventDate.getTime()) / (1000 * 60 * 60 * 24)
-      );
-      if (daysAgo === 0 && diffDays > 0) return false;
-      if (daysAgo > 0 && diffDays !== daysAgo) return false;
+      try {
+        const eventDate = new Date(e.timestamp);
+        if (isNaN(eventDate.getTime())) return true;
+        const diffDays = Math.floor((Date.now() - eventDate.getTime()) / (1000 * 60 * 60 * 24));
+        if (daysAgo === 0 && diffDays > 0) return false;
+        if (daysAgo > 0 && diffDays !== daysAgo) return false;
+      } catch { /* pass */ }
     }
     return true;
   });
@@ -179,8 +179,7 @@ export default function EventsTimeline() {
         ) : (
           <div className="py-1">
             {filtered.map((event, idx) => {
-              const isRecent =
-                Date.now() - new Date(event.timestamp).getTime() < 30 * 60 * 1000;
+              const isRecent = (() => { try { const t = new Date(event.timestamp).getTime(); return !isNaN(t) && Date.now() - t < 30 * 60 * 1000; } catch { return false; } })();
 
               return (
                 <div
@@ -232,10 +231,8 @@ export default function EventsTimeline() {
                         </p>
                       )}
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-2xs text-dark-500">
-                          {formatDistanceToNowStrict(new Date(event.timestamp), {
-                            addSuffix: true,
-                          })}
+                        <span className="text-2xs text-dark-500" suppressHydrationWarning>
+                          {(() => { try { const d = new Date(event.timestamp); return isNaN(d.getTime()) ? '' : formatDistanceToNowStrict(d, { addSuffix: true }); } catch { return ''; } })()}
                         </span>
                         {isRecent && (
                           <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />

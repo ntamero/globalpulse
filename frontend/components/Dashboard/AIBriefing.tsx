@@ -70,7 +70,8 @@ export default function AIBriefing() {
     );
   }
 
-  const hour = new Date().getHours();
+  const [hour, setHour] = useState(12);
+  useEffect(() => { setHour(new Date().getHours()); }, []);
 
   return (
     <div className="card glow-blue">
@@ -91,7 +92,7 @@ export default function AIBriefing() {
               </span>
             </div>
             <p className="text-2xs text-dark-500 mt-0.5">
-              {format(new Date(briefing.date), 'EEEE, MMMM d, yyyy - HH:mm z')}
+              {(() => { try { const d = new Date(briefing.date); return isNaN(d.getTime()) ? '' : format(d, 'EEEE, MMMM d, yyyy - HH:mm z'); } catch { return ''; } })()}
             </p>
           </div>
         </div>

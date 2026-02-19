@@ -82,7 +82,7 @@ export default function MarketWidget() {
         </div>
         <div className="flex items-center gap-2">
           {lastUpdate && (
-            <span className="text-2xs text-dark-600 font-mono">
+            <span className="text-2xs text-dark-600 font-mono" suppressHydrationWarning>
               {lastUpdate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
             </span>
           )}

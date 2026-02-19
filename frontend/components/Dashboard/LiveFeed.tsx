@@ -46,15 +46,20 @@ const categoryDots: Record<string, string> = {
 };
 
 function formatTime(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const secs = Math.floor(diff / 1000);
-  if (secs < 10) return 'just now';
-  if (secs < 60) return `${secs}s ago`;
-  const mins = Math.floor(secs / 60);
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
+  try {
+    const ts = new Date(dateStr).getTime();
+    if (isNaN(ts)) return '';
+    const diff = Date.now() - ts;
+    if (diff < 0) return 'just now';
+    const secs = Math.floor(diff / 1000);
+    if (secs < 10) return 'just now';
+    if (secs < 60) return `${secs}s ago`;
+    const mins = Math.floor(secs / 60);
+    if (mins < 60) return `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return `${Math.floor(hours / 24)}d ago`;
+  } catch { return ''; }
 }
 
 export default function LiveFeed() {
@@ -180,8 +185,7 @@ export default function LiveFeed() {
         ) : (
           news.map((item, idx) => {
             const isHighPriority = item.importance >= 7;
-            const isVeryNew =
-              Date.now() - new Date(item.published_at).getTime() < 5 * 60 * 1000;
+            const isVeryNew = (() => { try { const t = new Date(item.published_at).getTime(); return !isNaN(t) && Date.now() - t < 5 * 60 * 1000; } catch { return false; } })();
 
             return (
               <a
@@ -224,7 +228,7 @@ export default function LiveFeed() {
                         {item.source}
                       </span>
                       <span className="text-2xs text-dark-600">·</span>
-                      <span className="text-2xs text-dark-600 flex-shrink-0">
+                      <span className="text-2xs text-dark-600 flex-shrink-0" suppressHydrationWarning>
                         {formatTime(item.published_at)}
                       </span>
                       {isVeryNew && (

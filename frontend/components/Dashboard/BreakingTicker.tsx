@@ -73,8 +73,8 @@ export default function BreakingTicker() {
               <span className="text-2xs text-dark-500 ml-2 font-mono">
                 {item.source}
               </span>
-              <span className="text-2xs text-dark-600 ml-1.5">
-                {formatDistanceToNowStrict(new Date(item.published_at), { addSuffix: false })}
+              <span className="text-2xs text-dark-600 ml-1.5" suppressHydrationWarning>
+                {(() => { try { const d = new Date(item.published_at); return isNaN(d.getTime()) ? '' : formatDistanceToNowStrict(d, { addSuffix: false }); } catch { return ''; } })()}
               </span>
               <span className="text-dark-700 mx-4">|</span>
             </span>
