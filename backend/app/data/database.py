@@ -6,14 +6,14 @@ from typing import AsyncGenerator
 
 logger = logging.getLogger(__name__)
 
-DATABASE_URL = os.getenv(
+_raw_url = os.getenv(
     "DATABASE_URL",
-    "postgresql+asyncpg://globalpulse:globalpulse@localhost:5432/globalpulse"
+    "postgresql://globalpulse:globalpulse@localhost:5432/globalpulse"
 )
 
-SYNC_DATABASE_URL = os.getenv(
-    "SYNC_DATABASE_URL",
-    "postgresql+psycopg2://globalpulse:globalpulse@localhost:5432/globalpulse"
+# Ensure async driver is used
+DATABASE_URL = _raw_url.replace("postgresql://", "postgresql+asyncpg://").replace(
+    "postgresql+psycopg2://", "postgresql+asyncpg://"
 )
 
 engine = create_async_engine(
