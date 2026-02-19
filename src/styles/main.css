@@ -14924,3 +14924,389 @@ body.has-critical-banner .panels-grid {
     grid-row: unset !important;
   }
 }
+
+/* ============================================================
+   Radio Panel
+   ============================================================ */
+.radio-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Now Playing / Idle */
+.radio-player {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border, #2a2a2a);
+  flex-shrink: 0;
+}
+
+.radio-idle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  color: var(--text-dim, #888);
+}
+
+.radio-idle-icon {
+  font-size: 20px;
+}
+
+.radio-idle-text {
+  font-size: 12px;
+}
+
+.radio-now-playing {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.radio-np-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.radio-np-wave {
+  display: flex;
+  gap: 2px;
+  align-items: flex-end;
+  height: 16px;
+}
+
+.radio-np-wave span {
+  width: 3px;
+  background: #3b82f6;
+  border-radius: 1px;
+  height: 4px;
+  opacity: 0.4;
+}
+
+.radio-np-active span {
+  animation: radio-wave 0.8s ease-in-out infinite;
+  opacity: 1;
+}
+
+.radio-np-active span:nth-child(1) { animation-delay: 0s; }
+.radio-np-active span:nth-child(2) { animation-delay: 0.15s; }
+.radio-np-active span:nth-child(3) { animation-delay: 0.3s; }
+.radio-np-active span:nth-child(4) { animation-delay: 0.45s; }
+
+@keyframes radio-wave {
+  0%, 100% { height: 4px; }
+  50% { height: 14px; }
+}
+
+.radio-np-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.radio-np-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text, #e8e8e8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.radio-np-status {
+  font-size: 10px;
+  color: #4ade80;
+  font-weight: 500;
+}
+
+.radio-np-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.radio-ctrl-btn {
+  background: none;
+  border: 1px solid var(--border, #333);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--text, #e8e8e8);
+  transition: background 0.15s;
+}
+
+.radio-ctrl-btn:hover {
+  background: var(--overlay-light, rgba(255, 255, 255, 0.08));
+}
+
+.radio-ctrl-stop {
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.radio-volume {
+  width: 60px;
+  height: 4px;
+  accent-color: #3b82f6;
+  cursor: pointer;
+}
+
+.radio-error {
+  font-size: 11px;
+  color: #ef4444;
+  padding: 4px 0 0;
+}
+
+/* Categories */
+.radio-categories {
+  display: flex;
+  gap: 4px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border, #222);
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+
+.radio-cat-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--text-dim, #888);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.radio-cat-btn:hover {
+  background: var(--overlay-light, rgba(255, 255, 255, 0.06));
+  color: var(--text, #e8e8e8);
+}
+
+.radio-cat-btn.active {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+
+/* Station List */
+.radio-station-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 6px;
+}
+
+.radio-station {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+  color: var(--text, #e8e8e8);
+}
+
+.radio-station:hover {
+  background: var(--overlay-light, rgba(255, 255, 255, 0.05));
+}
+
+.radio-station-active {
+  background: rgba(59, 130, 246, 0.1) !important;
+}
+
+.radio-station-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.radio-station-name {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.radio-station-meta {
+  font-size: 10px;
+  color: var(--text-dim, #666);
+  text-transform: capitalize;
+}
+
+.radio-station-status {
+  flex-shrink: 0;
+}
+
+.radio-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+  display: inline-block;
+  animation: radio-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes radio-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4); }
+  50% { opacity: 0.7; box-shadow: 0 0 8px 2px rgba(74, 222, 128, 0.2); }
+}
+
+.radio-play-icon {
+  font-size: 11px;
+  color: var(--text-ghost, #555);
+}
+
+/* ============================================================
+   Sports Panel
+   ============================================================ */
+.sports-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sports-categories {
+  display: flex;
+  gap: 4px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border, #222);
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+
+.sports-cat-btn {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 8px;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--text-dim, #888);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sports-cat-btn:hover {
+  background: var(--overlay-light, rgba(255, 255, 255, 0.06));
+  color: var(--text, #e8e8e8);
+}
+
+.sports-cat-btn.active {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+
+.sports-cat-icon {
+  font-size: 13px;
+}
+
+.sports-cat-label {
+  font-size: 11px;
+}
+
+.sports-feed {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 6px;
+}
+
+.sports-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  color: var(--text-dim, #888);
+  gap: 6px;
+  padding: 40px 20px;
+}
+
+.sports-empty span {
+  font-size: 36px;
+  opacity: 0.5;
+}
+
+.sports-empty p {
+  font-size: 12px;
+  margin: 0;
+}
+
+.sports-empty-sub {
+  font-size: 11px !important;
+  color: var(--text-ghost, #555) !important;
+}
+
+.sports-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  text-decoration: none;
+  color: var(--text, #e8e8e8);
+  transition: background 0.15s;
+}
+
+.sports-item:hover {
+  background: var(--overlay-light, rgba(255, 255, 255, 0.05));
+}
+
+.sports-item-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+
+.sports-item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.sports-item-title {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.sports-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  color: var(--text-dim, #666);
+}
+
+.sports-item-source {
+  font-weight: 600;
+  color: var(--text-ghost, #888);
+}
+
+.sports-item-time {
+  color: var(--text-ghost, #555);
+}

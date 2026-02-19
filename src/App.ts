@@ -84,6 +84,8 @@ import {
   InvestmentsPanel,
   LanguageSelector,
   NewsTicker,
+  RadioPanel,
+  SportsPanel,
 } from '@/components';
 import type { SearchResult } from '@/components/SearchModal';
 import { collectStoryData } from '@/services/story-data';
@@ -2305,6 +2307,14 @@ export class App {
     const liveWebcamsPanel = new LiveWebcamsPanel();
     this.panels['live-webcams'] = liveWebcamsPanel;
 
+    // Radio Panel (all variants)
+    const radioPanel = new RadioPanel();
+    this.panels['radio'] = radioPanel;
+
+    // Sports Panel (all variants)
+    const sportsPanel = new SportsPanel();
+    this.panels['sports'] = sportsPanel;
+
     // Tech Events Panel (tech variant only - but create for all to allow toggling)
     this.panels['events'] = new TechEventsPanel('events');
 
@@ -3431,6 +3441,9 @@ export class App {
 
     // Feed news ticker with collected news
     this.newsTicker?.addNewsItems(collectedNews);
+
+    // Feed sports panel with sports-relevant items
+    (this.panels['sports'] as SportsPanel)?.updateNews(collectedNews);
 
     maybeShowDownloadBanner();
     mountGlobalChat();

@@ -40,3 +40,5 @@ export * from './InvestmentsPanel';
 export * from './LanguageSelector';
 export * from './NewsTicker';
 export * from './GlobalChat';
+export * from './RadioPanel';
+export * from './SportsPanel';

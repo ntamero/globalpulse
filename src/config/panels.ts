@@ -44,6 +44,8 @@ const FULL_PANELS: Record<string, PanelConfig> = {
   displacement: { name: 'UNHCR Displacement', enabled: true, priority: 2 },
   climate: { name: 'Climate Anomalies', enabled: true, priority: 2 },
   'population-exposure': { name: 'Population Exposure', enabled: true, priority: 2 },
+  radio: { name: 'Live Radio', enabled: true, priority: 2 },
+  sports: { name: 'Sports', enabled: true, priority: 2 },
 };
 
 const FULL_MAP_LAYERS: MapLayers = {
