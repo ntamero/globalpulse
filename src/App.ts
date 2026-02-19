@@ -83,6 +83,7 @@ import {
   PopulationExposurePanel,
   InvestmentsPanel,
   LanguageSelector,
+  NewsTicker,
 } from '@/components';
 import type { SearchResult } from '@/components/SearchModal';
 import { collectStoryData } from '@/services/story-data';
@@ -156,6 +157,7 @@ export class App {
   private exportPanel: ExportPanel | null = null;
   private languageSelector: LanguageSelector | null = null;
   private searchModal: SearchModal | null = null;
+  private newsTicker: NewsTicker | null = null;
   private mobileWarningModal: MobileWarningModal | null = null;
   private pizzintIndicator: PizzIntIndicator | null = null;
   private latestPredictions: PredictionMarket[] = [];
@@ -340,6 +342,14 @@ export class App {
 
     this.renderLayout();
     this.startHeaderClock();
+
+    // Mount news ticker
+    this.newsTicker = new NewsTicker();
+    const tickerMount = document.getElementById('tickerMount');
+    if (tickerMount) {
+      tickerMount.appendChild(this.newsTicker.getElement());
+    }
+
     this.signalModal = new SignalModal();
     this.signalModal.setLocationClickHandler((lat, lon) => {
       this.map?.setCenter(lat, lon, 4);
@@ -1847,6 +1857,7 @@ export class App {
           <button class="sources-btn" id="sourcesBtn">📡 ${t('header.sources')}</button>
         </div>
       </div>
+      <div id="tickerMount"></div>
       <div class="main-content">
         <div class="map-section" id="mapSection">
           <div class="panel-header">
@@ -3417,6 +3428,10 @@ export class App {
 
     this.allNews = collectedNews;
     this.initialLoadComplete = true;
+
+    // Feed news ticker with collected news
+    this.newsTicker?.addNewsItems(collectedNews);
+
     maybeShowDownloadBanner();
     mountCommunityWidget();
     // Temporal baseline: report news volume
