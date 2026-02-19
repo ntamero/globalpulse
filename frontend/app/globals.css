@@ -1,0 +1,289 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent-blue: #3b82f6;
+    --accent-red: #ef4444;
+    --accent-green: #22c55e;
+    --accent-gold: #f59e0b;
+    --border-color: #334155;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    overflow-x: hidden;
+  }
+}
+
+@layer components {
+  /* Breaking Ticker Animation */
+  .ticker-wrapper {
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .ticker-content {
+    display: inline-block;
+    animation: ticker-scroll 40s linear infinite;
+  }
+
+  .ticker-content:hover {
+    animation-play-state: paused;
+  }
+
+  @keyframes ticker-scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* Pulsing Live Dot */
+  .live-dot {
+    @apply relative inline-block w-2 h-2 rounded-full bg-red-500;
+  }
+
+  .live-dot::before {
+    content: '';
+    @apply absolute inset-0 rounded-full bg-red-500;
+    animation: pulse-ring 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(2.5);
+      opacity: 0;
+    }
+  }
+
+  /* Category Badges */
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold uppercase tracking-wider;
+  }
+
+  .badge-protests {
+    @apply bg-orange-500/20 text-orange-400 border border-orange-500/30;
+  }
+
+  .badge-sanctions {
+    @apply bg-purple-500/20 text-purple-400 border border-purple-500/30;
+  }
+
+  .badge-diplomacy {
+    @apply bg-blue-500/20 text-blue-400 border border-blue-500/30;
+  }
+
+  .badge-conflict {
+    @apply bg-red-500/20 text-red-400 border border-red-500/30;
+  }
+
+  .badge-internet {
+    @apply bg-cyan-500/20 text-cyan-400 border border-cyan-500/30;
+  }
+
+  .badge-economy {
+    @apply bg-green-500/20 text-green-400 border border-green-500/30;
+  }
+
+  .badge-military {
+    @apply bg-red-600/20 text-red-500 border border-red-600/30;
+  }
+
+  .badge-humanitarian {
+    @apply bg-yellow-500/20 text-yellow-400 border border-yellow-500/30;
+  }
+
+  .badge-breaking {
+    @apply bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse;
+  }
+
+  /* Severity Badges */
+  .severity-high {
+    @apply text-red-400;
+  }
+
+  .severity-medium {
+    @apply text-yellow-400;
+  }
+
+  .severity-low {
+    @apply text-green-400;
+  }
+
+  /* Card Styles */
+  .card {
+    @apply bg-dark-800 border border-dark-700 rounded-lg overflow-hidden;
+  }
+
+  .card-header {
+    @apply px-4 py-3 border-b border-dark-700 flex items-center justify-between;
+  }
+
+  .card-body {
+    @apply p-4;
+  }
+
+  /* Sidebar Panel */
+  .sidebar-panel {
+    @apply bg-dark-800/80 backdrop-blur-sm border border-dark-700 rounded-lg overflow-hidden;
+  }
+
+  /* Glass Effect */
+  .glass {
+    @apply bg-dark-800/60 backdrop-blur-md border border-dark-700/50;
+  }
+
+  /* Glow Effects */
+  .glow-blue {
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.15), 0 0 3px rgba(59, 130, 246, 0.3);
+  }
+
+  .glow-red {
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.15), 0 0 3px rgba(239, 68, 68, 0.3);
+  }
+
+  /* News Item Hover */
+  .news-item {
+    @apply relative pl-4 py-2.5 border-b border-dark-700/50 transition-all duration-200;
+  }
+
+  .news-item:hover {
+    @apply bg-dark-700/30;
+  }
+
+  .news-item::before {
+    content: '';
+    @apply absolute left-0 top-0 bottom-0 w-0.5 bg-transparent transition-colors duration-200;
+  }
+
+  .news-item:hover::before {
+    @apply bg-brand-500;
+  }
+
+  /* Timeline Item */
+  .timeline-item {
+    @apply relative pl-6 pb-4;
+  }
+
+  .timeline-item::before {
+    content: '';
+    @apply absolute left-2 top-2 bottom-0 w-px bg-dark-600;
+  }
+
+  .timeline-item::after {
+    content: '';
+    @apply absolute left-1 top-2 w-2.5 h-2.5 rounded-full bg-dark-600 border-2 border-dark-800;
+  }
+
+  .timeline-item.active::after {
+    @apply bg-brand-500 border-brand-400;
+  }
+
+  .timeline-item.breaking::after {
+    @apply bg-red-500 border-red-400;
+    animation: pulse-ring 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+@layer utilities {
+  /* Custom Scrollbar */
+  .scrollbar-dark {
+    scrollbar-width: thin;
+    scrollbar-color: #334155 #1e293b;
+  }
+
+  .scrollbar-dark::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-dark::-webkit-scrollbar-track {
+    background: #1e293b;
+    border-radius: 3px;
+  }
+
+  .scrollbar-dark::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 3px;
+  }
+
+  .scrollbar-dark::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+  }
+
+  .scrollbar-hidden {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Text Gradient */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-400 to-cyan-400;
+  }
+
+  /* Animate new items */
+  .animate-new-item {
+    animation: slide-in-top 0.4s ease-out, glow-fade 2s ease-out;
+  }
+
+  @keyframes glow-fade {
+    0% {
+      background-color: rgba(59, 130, 246, 0.1);
+    }
+    100% {
+      background-color: transparent;
+    }
+  }
+
+  /* Map Overrides */
+  .leaflet-container {
+    background: #0f172a !important;
+    font-family: 'Inter', sans-serif !important;
+  }
+
+  .leaflet-popup-content-wrapper {
+    @apply bg-dark-800 border border-dark-600 text-dark-100 rounded-lg shadow-xl !important;
+  }
+
+  .leaflet-popup-tip {
+    @apply bg-dark-800 !important;
+  }
+
+  .leaflet-control-zoom a {
+    @apply bg-dark-800 text-dark-200 border-dark-600 !important;
+  }
+
+  .leaflet-control-zoom a:hover {
+    @apply bg-dark-700 !important;
+  }
+}

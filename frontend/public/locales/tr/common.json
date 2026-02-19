@@ -1,0 +1,112 @@
+{
+  "site": {
+    "name": "GlobalPulse",
+    "tagline": "Gercek Zamanli Kuresel Istihbarat Monitoru",
+    "description": "Yapay zeka destekli analizlerle son dakika haberleri, jeopolitik olaylar ve gelisen krizleri takip edin."
+  },
+  "nav": {
+    "monitor": "Monitor",
+    "regions": "Bolgeler",
+    "liveTV": "Canli TV",
+    "timeline": "Zaman Cizelgesi",
+    "maps": "Haritalar",
+    "about": "Hakkinda",
+    "search": "Olaylari, haberleri ara...",
+    "premium": "Premium",
+    "live": "CANLI"
+  },
+  "dashboard": {
+    "breakingNews": "SON DAKIKA",
+    "latestHeadlines": "Son Haberler",
+    "storiesCount": "Bugun {count} haber",
+    "eventsTimeline": "Olaylar Zaman Cizelgesi",
+    "liveFeed": "Canli Akis",
+    "trackedSources": "Takip Edilen Kaynaklar",
+    "globalEventMap": "Kuresel Olay Haritasi",
+    "liveTV": "Canli TV",
+    "markets": "Piyasalar",
+    "internetHealth": "Internet Sagligi",
+    "selectChannel": "Kanal secin",
+    "viewAll": "Tumunu gor",
+    "viewOnX": "X'de gor",
+    "noHeadlines": "Bu kategoride haber yok",
+    "noEvents": "Filtrelere uyan olay yok",
+    "loadingMap": "Harita yukleniyor..."
+  },
+  "briefing": {
+    "morningBriefing": "Sabah Brifing",
+    "eveningBriefing": "Aksam Brifing",
+    "aiGenerated": "Yapay Zeka Uretimi",
+    "recap": "Ozet",
+    "thingsToWatch": "Takip Edilecekler",
+    "probability": "olasilik",
+    "impact": "etki"
+  },
+  "categories": {
+    "all": "Tumu",
+    "protests": "Protestolar",
+    "sanctions": "Yaptirmlar",
+    "diplomacy": "Diplomasi",
+    "conflict": "Catisma",
+    "internet": "Internet",
+    "economy": "Ekonomi",
+    "military": "Askeri",
+    "humanitarian": "Insani Yardim",
+    "other": "Diger"
+  },
+  "time": {
+    "all": "Tumu",
+    "today": "Bugun",
+    "daysAgo": "{count} gun once",
+    "now": "simdi",
+    "minutesAgo": "{count}dk",
+    "hoursAgo": "{count}sa"
+  },
+  "severity": {
+    "critical": "Kritik",
+    "high": "Yuksek",
+    "medium": "Orta",
+    "low": "Dusuk"
+  },
+  "status": {
+    "operational": "Calisiyor",
+    "degraded": "Aksama",
+    "outage": "Kesinti",
+    "developing": "GELISIYOR"
+  },
+  "liveTV": {
+    "title": "Canli TV ve Radyo",
+    "tv": "TV",
+    "radio": "Radyo",
+    "webcams": "Web Kameralari",
+    "watchNow": "Simdi Izle",
+    "liveNow": "CANLI"
+  },
+  "timeline": {
+    "title": "Tam Zaman Cizelgesi",
+    "filterByCategory": "Kategoriye Gore Filtrele",
+    "filterByRegion": "Bolgeye Gore Filtrele",
+    "filterBySeverity": "Ciddiyete Gore Filtrele",
+    "sortBy": "Siralama",
+    "newest": "En Yeni",
+    "severity": "Ciddiyet",
+    "relevance": "Ilgi"
+  },
+  "region": {
+    "title": "Bolge Monitoru",
+    "overview": "Genel Bakis",
+    "events": "Olaylar",
+    "news": "Haberler",
+    "analysis": "Analiz"
+  },
+  "common": {
+    "loading": "Yukleniyor...",
+    "error": "Bir hata olustu",
+    "retry": "Tekrar Dene",
+    "showMore": "Daha fazla goster",
+    "showLess": "Daha az goster",
+    "refresh": "Yenile",
+    "close": "Kapat",
+    "sources": "Kaynaklar"
+  }
+}
