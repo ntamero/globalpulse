@@ -54,18 +54,54 @@ export default function EventsTimeline() {
   const [categoryFilter, setCategoryFilter] = useState('all');
 
   useEffect(() => {
+    // Start with mock data so UI renders immediately
+    setEvents(getMockEvents());
+
     async function loadEvents() {
       try {
         const res = await fetch('/api/events/timeline');
         if (res.ok) {
           const data = await res.json();
-          setEvents(data.items || data || []);
-          return;
+          // Backend returns {timeline: {hour: [events]}} or {items: [...]} or {events: [...]}
+          let items: any[] = [];
+          if (Array.isArray(data)) {
+            items = data;
+          } else if (Array.isArray(data?.items)) {
+            items = data.items;
+          } else if (Array.isArray(data?.events)) {
+            items = data.events;
+          } else if (data?.timeline && typeof data.timeline === 'object') {
+            // Flatten timeline grouped events into a flat array
+            Object.values(data.timeline).forEach((group: any) => {
+              if (Array.isArray(group)) {
+                items.push(...group);
+              }
+            });
+          }
+          if (items.length > 0) {
+            // Normalize backend event format to EventItem format
+            const normalized = items.map((e: any) => ({
+              id: e.id || e.event_id || String(Math.random()),
+              title: e.title || '',
+              description: e.description || '',
+              category: e.category || 'general',
+              severity: e.severity || 5,
+              timestamp: e.timestamp || new Date().toISOString(),
+              location: e.location || (e.latitude && e.longitude ? {
+                lat: e.latitude,
+                lng: e.longitude,
+                name: e.city || e.country || '',
+                country: e.country || '',
+              } : undefined),
+              sources: e.sources || [],
+              is_developing: e.is_developing || false,
+            }));
+            setEvents(normalized);
+          }
         }
       } catch {
-        // fallback
+        // keep mock data
       }
-      setEvents(getMockEvents());
     }
     loadEvents();
     const interval = setInterval(loadEvents, 30000);

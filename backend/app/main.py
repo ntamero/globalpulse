@@ -80,11 +80,13 @@ from app.api.news import router as news_router       # noqa: E402
 from app.api.events import router as events_router    # noqa: E402
 from app.api.streams import router as streams_router  # noqa: E402
 from app.api.public_api import router as public_router  # noqa: E402
+from app.api.briefing import router as briefing_router  # noqa: E402
 
 app.include_router(news_router)
 app.include_router(events_router)
 app.include_router(streams_router)
 app.include_router(public_router)
+app.include_router(briefing_router)
 
 
 # ---------------------------------------------------------------------------

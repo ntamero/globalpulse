@@ -62,18 +62,49 @@ export default function WorldMap() {
   }, []);
 
   useEffect(() => {
+    // Start with mock data immediately so UI renders
+    setEvents(getMockEvents());
+
+    // Then try to fetch real data
     async function loadMapEvents() {
       try {
         const res = await fetch('/api/events/map');
         if (res.ok) {
           const data = await res.json();
-          setEvents(data.items || data || []);
-          return;
+          // Backend returns {markers: [...]} or {items: [...]} or {events: [...]} or plain array
+          const items = Array.isArray(data)
+            ? data
+            : Array.isArray(data?.markers)
+            ? data.markers
+            : Array.isArray(data?.items)
+            ? data.items
+            : Array.isArray(data?.events)
+            ? data.events
+            : [];
+          if (items.length > 0) {
+            // Normalize backend marker format (latitude/longitude) to EventItem format (location.lat/lng)
+            const normalized = items.map((m: any) => ({
+              id: m.id || String(Math.random()),
+              title: m.title || '',
+              description: m.description || '',
+              category: m.category || 'general',
+              severity: m.severity || 5,
+              timestamp: m.timestamp || new Date().toISOString(),
+              sources: m.sources || [],
+              is_developing: m.is_developing || false,
+              location: m.location || (m.latitude && m.longitude ? {
+                lat: m.latitude,
+                lng: m.longitude,
+                name: m.city || m.country || '',
+                country: m.country || '',
+              } : undefined),
+            }));
+            setEvents(normalized);
+          }
         }
       } catch {
-        // fallback
+        // keep mock data
       }
-      setEvents(getMockEvents().filter((e) => e.location));
     }
     loadMapEvents();
   }, []);

@@ -14,8 +14,26 @@ export default function BreakingTicker() {
         const res = await fetch('/api/news/breaking');
         if (res.ok) {
           const data = await res.json();
-          setHeadlines(Array.isArray(data) ? data : data.items || []);
-          return;
+          const items = Array.isArray(data)
+            ? data
+            : Array.isArray(data?.articles)
+            ? data.articles
+            : Array.isArray(data?.items)
+            ? data.items
+            : [];
+          if (items.length > 0) {
+            const normalized = items.map((a: any) => ({
+              id: a.id || String(Math.random()),
+              title: a.title || '',
+              source: a.source || a.source_name || '',
+              url: a.url || a.source_url || '#',
+              category: a.category || 'general',
+              published_at: a.published_at || new Date().toISOString(),
+              is_breaking: true,
+            }));
+            setHeadlines(normalized);
+            return;
+          }
         }
       } catch {
         // fallback to mock

@@ -53,10 +53,33 @@ export default function LatestHeadlines() {
       const res = await fetch(`/api/news?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
-        setHeadlines(data.items || data || []);
-        setLastUpdate(new Date());
-        setIsRefreshing(false);
-        return;
+        // Backend returns {articles: [...]} or {items: [...]} or plain array
+        const items = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.articles)
+          ? data.articles
+          : Array.isArray(data?.items)
+          ? data.items
+          : [];
+        if (items.length > 0) {
+          // Normalize backend article format to NewsItem format
+          const normalized = items.map((a: any) => ({
+            id: a.id || a.article_id || String(Math.random()),
+            title: a.title || '',
+            summary: a.summary || '',
+            source: a.source || a.source_name || '',
+            url: a.url || a.source_url || '#',
+            category: a.category || 'general',
+            published_at: a.published_at || a.scraped_at || new Date().toISOString(),
+            image_url: a.image_url || '',
+            is_breaking: a.is_breaking || (a.importance_score && a.importance_score >= 8),
+            region: a.region || '',
+          }));
+          setHeadlines(normalized);
+          setLastUpdate(new Date());
+          setIsRefreshing(false);
+          return;
+        }
       }
     } catch {
       // fallback
