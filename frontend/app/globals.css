@@ -45,7 +45,7 @@
 
   .ticker-content {
     display: inline-block;
-    animation: ticker-scroll 40s linear infinite;
+    animation: ticker-scroll 120s linear infinite;
   }
 
   .ticker-content:hover {

@@ -7,18 +7,20 @@ import LatestHeadlines from '@/components/Dashboard/LatestHeadlines';
 import WorldMap from '@/components/Dashboard/WorldMap';
 import EventsTimeline from '@/components/Dashboard/EventsTimeline';
 import LiveFeed from '@/components/Dashboard/LiveFeed';
-import LiveTV from '@/components/Dashboard/LiveTV';
+import LiveMedia from '@/components/Dashboard/LiveMedia';
 import MarketWidget from '@/components/Dashboard/MarketWidget';
 import InternetStatus from '@/components/Dashboard/InternetStatus';
+import VideoShorts from '@/components/Dashboard/VideoShorts';
+import GlobalChat from '@/components/Dashboard/GlobalChat';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-dark-900">
+    <div id="top" className="min-h-screen bg-dark-900">
       <Header />
       <BreakingTicker />
 
       <main className="flex gap-0 lg:gap-1 w-full max-w-[1920px] mx-auto">
-        {/* LEFT SIDEBAR - Live Feed */}
+        {/* LEFT SIDEBAR - Live News Feed */}
         <aside className="hidden xl:block w-72 flex-shrink-0 min-h-[calc(100vh-7rem)] border-r border-dark-700/50">
           <div className="sticky top-0 h-[calc(100vh-7rem)] overflow-y-auto scrollbar-dark">
             <LiveFeed />
@@ -38,23 +40,42 @@ export default function HomePage() {
           </div>
 
           {/* AI Briefing */}
-          <AIBriefing />
+          <div id="briefing">
+            <AIBriefing />
+          </div>
+
+          {/* Video Shorts */}
+          <VideoShorts />
 
           {/* Latest Headlines */}
-          <LatestHeadlines />
+          <div id="headlines">
+            <LatestHeadlines />
+          </div>
 
           {/* World Map */}
-          <WorldMap />
+          <div id="world-map">
+            <WorldMap />
+          </div>
+
+          {/* Live Media (TV/Radio/Cameras) - also in center for mobile */}
+          <div id="live-media" className="lg:hidden">
+            <LiveMedia />
+          </div>
         </div>
 
-        {/* RIGHT SIDEBAR - Events Timeline + Live TV */}
+        {/* RIGHT SIDEBAR - Events Timeline + Live Media */}
         <aside className="hidden lg:block w-80 flex-shrink-0 min-h-[calc(100vh-7rem)] border-l border-dark-700/50">
-          <div className="sticky top-0 h-[calc(100vh-7rem)] overflow-y-auto scrollbar-dark space-y-0">
+          <div id="timeline" className="sticky top-0 h-[calc(100vh-7rem)] overflow-y-auto scrollbar-dark space-y-0">
             <EventsTimeline />
-            <LiveTV />
+            <div id="live-media-desktop">
+              <LiveMedia />
+            </div>
           </div>
         </aside>
       </main>
+
+      {/* Global Chat - Floating */}
+      <GlobalChat />
     </div>
   );
 }
