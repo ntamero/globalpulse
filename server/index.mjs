@@ -276,6 +276,9 @@ const VERCEL_APIS = [
   'hapi',
   'fwdstart',
   'download',
+  'sitemap',
+  'news-sitemap',
+  'feed',
 ];
 
 for (const api of VERCEL_APIS) {
