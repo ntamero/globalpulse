@@ -33,12 +33,6 @@ const SPORT_PATTERNS: Record<SportCategory, RegExp> = {
   other: /\b(olympic|golf|rugby|baseball|mlb|nhl|hockey|boxing|mma|ufc|swimming|athletics|marathon|cycling|tour de france|skiing|snowboard|volleyball|handball|wrestling|esports)\b/i,
 };
 
-// RSS feed URLs for sports news
-const SPORTS_FEEDS = [
-  { name: 'BBC Sport', url: '/rss/bbc/sport/rss.xml' },
-  { name: 'ESPN', url: '/rss/bbc/sport/football/rss.xml' },
-];
-
 export class SportsPanel extends Panel {
   private items: NewsItem[] = [];
   private activeCategory: SportCategory = 'all';
