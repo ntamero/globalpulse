@@ -136,7 +136,7 @@ async function polyFetch(endpoint: 'events' | 'markets', params: Record<string, 
   } catch { /* local proxy failed */ }
 
   // Final fallback: hit production endpoint directly
-  return fetch(`https://worldmonitor.app/api/polymarket?${proxyQs}`);
+  return fetch(`http://46.62.167.252/api/polymarket?${proxyQs}`);
 }
 
 const GEOPOLITICAL_TAGS = [

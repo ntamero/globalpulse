@@ -11,25 +11,23 @@ function sanitizeVideoId(value) {
 }
 
 const ALLOWED_ORIGINS = [
-  /^https:\/\/(.*\.)?worldmonitor\.app$/,
-  /^https:\/\/worldmonitor-[a-z0-9-]+-elie-habib-projects\.vercel\.app$/,
-  /^https:\/\/worldmonitor-[a-z0-9-]+\.vercel\.app$/,
+  /^https?:\/\/46\.62\.167\.252(:\d+)?$/,
   /^https?:\/\/localhost(:\d+)?$/,
   /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
   /^tauri:\/\/localhost$/,
 ];
 
 function sanitizeOrigin(raw) {
-  if (!raw) return 'https://worldmonitor.app';
+  if (!raw) return 'http://46.62.167.252';
   try {
     const parsed = new URL(raw);
     if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:' && parsed.protocol !== 'tauri:') {
-      return 'https://worldmonitor.app';
+      return 'http://46.62.167.252';
     }
     const origin = parsed.origin !== 'null' ? parsed.origin : raw;
     if (ALLOWED_ORIGINS.some(p => p.test(origin))) return origin;
   } catch { /* invalid URL */ }
-  return 'https://worldmonitor.app';
+  return 'http://46.62.167.252';
 }
 
 export default async function handler(request) {

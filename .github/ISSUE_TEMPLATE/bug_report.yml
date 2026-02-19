@@ -13,9 +13,9 @@ body:
       label: Variant
       description: Which variant are you using?
       options:
-        - worldmonitor.app (Full / Geopolitical)
-        - tech.worldmonitor.app (Tech / Startup)
-        - finance.worldmonitor.app (Finance)
+        - 46.62.167.252 (Full / Geopolitical)
+        - tech.46.62.167.252 (Tech / Startup)
+        - finance.46.62.167.252 (Finance)
         - Desktop app (Windows)
         - Desktop app (macOS)
     validations:

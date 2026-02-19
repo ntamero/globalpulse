@@ -386,9 +386,9 @@ fn build_app_menu(handle: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
     let about_metadata = AboutMetadata {
         name: Some("World Monitor".into()),
         version: Some(env!("CARGO_PKG_VERSION").into()),
-        copyright: Some("\u{00a9} 2025 Elie Habib".into()),
-        website: Some("https://worldmonitor.app".into()),
-        website_label: Some("worldmonitor.app".into()),
+        copyright: Some("\u{00a9} 2025 GlobalPulse Team".into()),
+        website: Some("https://46.62.167.252".into()),
+        website_label: Some("46.62.167.252".into()),
         ..Default::default()
     };
     let about_item = PredefinedMenuItem::about(handle, Some("About World Monitor"), Some(about_metadata))?;
@@ -437,7 +437,7 @@ fn handle_menu_event(app: &AppHandle, event: tauri::menu::MenuEvent) {
             }
         }
         MENU_HELP_GITHUB_ID => {
-            let _ = open_in_shell("https://github.com/koala73/worldmonitor");
+            let _ = open_in_shell("https://github.com/ntamero/globalpulse");
         }
         MENU_HELP_DEVTOOLS_ID => {
             if let Some(window) = app.get_webview_window("main") {

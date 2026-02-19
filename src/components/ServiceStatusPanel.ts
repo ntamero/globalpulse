@@ -161,7 +161,7 @@ export class ServiceStatusPanel extends Panel {
     }
 
     const port = this.localBackend.port ?? 46123;
-    const remote = this.localBackend.remoteBase ?? 'https://worldmonitor.app';
+    const remote = this.localBackend.remoteBase ?? 'http://46.62.167.252';
 
     return `
       <div class="service-status-backend">

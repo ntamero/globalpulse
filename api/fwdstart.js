@@ -81,7 +81,7 @@ export default async function handler(req) {
     <description>Forward-thinking startup and VC news from MENA and beyond</description>
     <language>en-us</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
-    <atom:link href="https://worldmonitor.app/api/fwdstart" rel="self" type="application/rss+xml"/>
+    <atom:link href="http://46.62.167.252/api/fwdstart" rel="self" type="application/rss+xml"/>
     ${rssItems}
   </channel>
 </rss>`;

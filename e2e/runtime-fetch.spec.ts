@@ -54,7 +54,7 @@ test.describe('desktop runtime routing guardrails', () => {
           userAgent: 'Mozilla/5.0',
           locationProtocol: 'https:',
           locationHost: 'worldmonitor.app',
-          locationOrigin: 'https://worldmonitor.app',
+          locationOrigin: 'http://46.62.167.252',
         }),
       };
     });
@@ -234,7 +234,7 @@ test.describe('desktop runtime routing guardrails', () => {
         __TAURI__?: { core?: { invoke?: (command: string) => Promise<unknown> } };
       };
       const previousTauri = globalWindow.__TAURI__;
-      const releaseUrl = 'https://github.com/koala73/worldmonitor/releases/latest';
+      const releaseUrl = 'https://github.com/ntamero/globalpulse/releases/latest';
 
       const appProto = App.prototype as unknown as {
         resolveUpdateDownloadUrl: (releaseUrl: string) => Promise<string>;
@@ -281,9 +281,9 @@ test.describe('desktop runtime routing guardrails', () => {
       }
     });
 
-    expect(result.macArm).toBe('https://worldmonitor.app/api/download?platform=macos-arm64&variant=full');
-    expect(result.windowsX64).toBe('https://worldmonitor.app/api/download?platform=windows-exe&variant=full');
-    expect(result.linuxFallback).toBe('https://github.com/koala73/worldmonitor/releases/latest');
+    expect(result.macArm).toBe('http://46.62.167.252/api/download?platform=macos-arm64&variant=full');
+    expect(result.windowsX64).toBe('http://46.62.167.252/api/download?platform=windows-exe&variant=full');
+    expect(result.linuxFallback).toBe('https://github.com/ntamero/globalpulse/releases/latest');
   });
 
   test('loadMarkets keeps Yahoo-backed data when Finnhub is skipped', async ({ page }) => {

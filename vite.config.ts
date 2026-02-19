@@ -21,7 +21,7 @@ const VARIANT_META: Record<string, {
     title: 'World Monitor - Real-Time Global Intelligence Dashboard',
     description: 'Real-time global intelligence dashboard with live news, markets, military tracking, infrastructure monitoring, and geopolitical data. OSINT in one view.',
     keywords: 'global intelligence, geopolitical dashboard, world news, market data, military bases, nuclear facilities, undersea cables, conflict zones, real-time monitoring, situation awareness, OSINT, flight tracking, AIS ships, earthquake monitor, protest tracker, power outages, oil prices, government spending, polymarket predictions',
-    url: 'https://worldmonitor.app/',
+    url: 'https://46.62.167.252/',
     siteName: 'World Monitor',
     shortName: 'WorldMonitor',
     subject: 'Real-Time Global Intelligence and Situation Awareness',
@@ -46,7 +46,7 @@ const VARIANT_META: Record<string, {
     title: 'Tech Monitor - Real-Time AI & Tech Industry Dashboard',
     description: 'Real-time AI and tech industry dashboard tracking tech giants, AI labs, startup ecosystems, funding rounds, and tech events worldwide.',
     keywords: 'tech dashboard, AI industry, startup ecosystem, tech companies, AI labs, venture capital, tech events, tech conferences, cloud infrastructure, datacenters, tech layoffs, funding rounds, unicorns, FAANG, tech HQ, accelerators, Y Combinator, tech news',
-    url: 'https://tech.worldmonitor.app/',
+    url: 'https://tech.46.62.167.252/',
     siteName: 'Tech Monitor',
     shortName: 'TechMonitor',
     subject: 'AI, Tech Industry, and Startup Ecosystem Intelligence',
@@ -70,7 +70,7 @@ const VARIANT_META: Record<string, {
     title: 'Finance Monitor - Real-Time Markets & Trading Dashboard',
     description: 'Real-time finance and trading dashboard tracking global markets, stock exchanges, central banks, commodities, forex, crypto, and economic indicators worldwide.',
     keywords: 'finance dashboard, trading dashboard, stock market, forex, commodities, central banks, crypto, economic indicators, market news, financial centers, stock exchanges, bonds, derivatives, fintech, hedge funds, IPO tracker, market analysis',
-    url: 'https://finance.worldmonitor.app/',
+    url: 'https://finance.46.62.167.252/',
     siteName: 'Finance Monitor',
     shortName: 'FinanceMonitor',
     subject: 'Global Markets, Trading, and Financial Intelligence',
@@ -345,7 +345,7 @@ export default defineConfig({
       // Polymarket API — proxy through production Vercel edge function
       // Direct gamma-api.polymarket.com is blocked by Cloudflare JA3 fingerprinting
       '/api/polymarket': {
-        target: 'https://worldmonitor.app',
+        target: 'https://46.62.167.252',
         changeOrigin: true,
         configure: (proxy) => {
           proxy.on('error', (err) => {

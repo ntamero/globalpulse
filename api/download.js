@@ -1,7 +1,7 @@
 export const config = { runtime: 'edge' };
 
-const RELEASES_URL = 'https://api.github.com/repos/koala73/worldmonitor/releases/latest';
-const RELEASES_PAGE = 'https://github.com/koala73/worldmonitor/releases/latest';
+const RELEASES_URL = 'https://api.github.com/repos/ntamero/globalpulse/releases/latest';
+const RELEASES_PAGE = 'https://github.com/ntamero/globalpulse/releases/latest';
 
 const PLATFORM_PATTERNS = {
   'windows-exe': (name) => name.endsWith('_x64-setup.exe'),

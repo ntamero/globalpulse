@@ -1,6 +1,6 @@
 export const config = { runtime: 'edge' };
 
-const RELEASES_URL = 'https://api.github.com/repos/koala73/worldmonitor/releases/latest';
+const RELEASES_URL = 'https://api.github.com/repos/ntamero/globalpulse/releases/latest';
 
 export default async function handler() {
   try {

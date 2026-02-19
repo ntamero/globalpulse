@@ -10,14 +10,14 @@ The project is built with TypeScript, Vite, MapLibre GL JS, deck.gl, D3.js, and 
 
 ## Live Instances
 
-- [World Monitor](https://worldmonitor.app): Geopolitics, military, conflicts, infrastructure — ~25 RSS categories, 44 panels, military bases, nuclear facilities, hotspots
-- [Tech Monitor](https://tech.worldmonitor.app): Startups, AI/ML, cloud, cybersecurity — ~20 RSS categories, 31 panels, tech HQs, cloud regions, startup hubs
-- [Finance Monitor](https://finance.worldmonitor.app): Global markets, trading, central banks, Gulf FDI — ~18 RSS categories, 30 panels, stock exchanges, central banks, Gulf investments
+- [World Monitor](https://46.62.167.252): Geopolitics, military, conflicts, infrastructure — ~25 RSS categories, 44 panels, military bases, nuclear facilities, hotspots
+- [Tech Monitor](https://tech.46.62.167.252): Startups, AI/ML, cloud, cybersecurity — ~20 RSS categories, 31 panels, tech HQs, cloud regions, startup hubs
+- [Finance Monitor](https://finance.46.62.167.252): Global markets, trading, central banks, Gulf FDI — ~18 RSS categories, 30 panels, stock exchanges, central banks, Gulf investments
 
 ## Documentation
 
-- [README](https://github.com/koala73/worldmonitor/blob/main/README.md): Full project documentation with architecture details, algorithm descriptions, and data source specifications
-- [Full Documentation](https://github.com/koala73/worldmonitor/blob/main/docs/DOCUMENTATION.md): Detailed feature documentation, data layer reference, panel descriptions, and clustering logic
+- [README](https://github.com/ntamero/globalpulse/blob/main/README.md): Full project documentation with architecture details, algorithm descriptions, and data source specifications
+- [Full Documentation](https://github.com/ntamero/globalpulse/blob/main/docs/DOCUMENTATION.md): Detailed feature documentation, data layer reference, panel descriptions, and clustering logic
 
 ## Data Layers — Geopolitical
 
@@ -158,9 +158,9 @@ English (en), French (fr), Spanish (es), German (de), Italian (it), Polish (pl),
 
 A single codebase produces three specialized dashboards controlled by the VITE_VARIANT environment variable:
 
-- **World Monitor** (worldmonitor.app): ~25 RSS categories, 44 panels. Focus: geopolitics, military, conflicts, infrastructure security. Unique layers: military bases, nuclear facilities, hotspots, APT groups, spaceports, critical minerals
-- **Tech Monitor** (tech.worldmonitor.app): ~20 RSS categories, 31 panels. Focus: AI/ML, startups, cybersecurity, cloud. Unique layers: tech HQs, cloud regions, startup hubs, accelerators, tech events
-- **Finance Monitor** (finance.worldmonitor.app): ~18 RSS categories, 30 panels. Focus: global markets, trading, central banks, Gulf FDI. Unique layers: 92 stock exchanges, 19 financial centers, 13 central banks, 10 commodity hubs, 64 Gulf FDI investments
+- **World Monitor** (46.62.167.252): ~25 RSS categories, 44 panels. Focus: geopolitics, military, conflicts, infrastructure security. Unique layers: military bases, nuclear facilities, hotspots, APT groups, spaceports, critical minerals
+- **Tech Monitor** (tech.46.62.167.252): ~20 RSS categories, 31 panels. Focus: AI/ML, startups, cybersecurity, cloud. Unique layers: tech HQs, cloud regions, startup hubs, accelerators, tech events
+- **Finance Monitor** (finance.46.62.167.252): ~18 RSS categories, 30 panels. Focus: global markets, trading, central banks, Gulf FDI. Unique layers: 92 stock exchanges, 19 financial centers, 13 central banks, 10 commodity hubs, 64 Gulf FDI investments
 
 Build-time: Vite HTML plugin transforms meta tags, Open Graph data, PWA manifest, and JSON-LD structured data. Each variant tree-shakes unused data files. Runtime: variant selector in header navigates between deployed domains (web) or sets localStorage preference (desktop).
 
@@ -224,6 +224,6 @@ Native desktop app built with Tauri (Rust + Node.js sidecar). The sidecar mirror
 
 ## Optional
 
-- [Source Code](https://github.com/koala73/worldmonitor): GitHub repository (AGPL-3.0)
-- [Releases](https://github.com/koala73/worldmonitor/releases): All desktop releases for macOS, Windows, and Linux
-- [Issues](https://github.com/koala73/worldmonitor/issues): Bug reports and feature requests
+- [Source Code](https://github.com/ntamero/globalpulse): GitHub repository (AGPL-3.0)
+- [Releases](https://github.com/ntamero/globalpulse/releases): All desktop releases for macOS, Windows, and Linux
+- [Issues](https://github.com/ntamero/globalpulse/issues): Bug reports and feature requests

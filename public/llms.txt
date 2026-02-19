@@ -10,15 +10,15 @@ The project is built with TypeScript, Vite, MapLibre GL JS, deck.gl, D3.js, and 
 
 ## Live Instances
 
-- [World Monitor](https://worldmonitor.app): Geopolitics, military, conflicts, infrastructure
-- [Tech Monitor](https://tech.worldmonitor.app): Startups, AI/ML, cloud, cybersecurity
-- [Finance Monitor](https://finance.worldmonitor.app): Global markets, trading, central banks, Gulf FDI
+- [World Monitor](https://46.62.167.252): Geopolitics, military, conflicts, infrastructure
+- [Tech Monitor](https://tech.46.62.167.252): Startups, AI/ML, cloud, cybersecurity
+- [Finance Monitor](https://finance.46.62.167.252): Global markets, trading, central banks, Gulf FDI
 
 ## Documentation
 
-- [README](https://github.com/koala73/worldmonitor/blob/main/README.md): Full project documentation with architecture details
-- [Full Documentation](https://github.com/koala73/worldmonitor/blob/main/docs/DOCUMENTATION.md): Detailed feature documentation, data layers, and panel reference
-- [Extended LLM Documentation](https://worldmonitor.app/llms-full.txt): Comprehensive version of this file with all data layers, components, and data sources
+- [README](https://github.com/ntamero/globalpulse/blob/main/README.md): Full project documentation with architecture details
+- [Full Documentation](https://github.com/ntamero/globalpulse/blob/main/docs/DOCUMENTATION.md): Detailed feature documentation, data layers, and panel reference
+- [Extended LLM Documentation](https://46.62.167.252/llms-full.txt): Comprehensive version of this file with all data layers, components, and data sources
 
 ## Key Features
 
@@ -40,10 +40,10 @@ The project is built with TypeScript, Vite, MapLibre GL JS, deck.gl, D3.js, and 
 
 ## Desktop App
 
-- [Windows Installer](https://worldmonitor.app/api/download?platform=windows-exe): Windows .exe installer
-- [macOS Apple Silicon](https://worldmonitor.app/api/download?platform=macos-arm64): macOS ARM64 build
-- [macOS Intel](https://worldmonitor.app/api/download?platform=macos-x64): macOS x64 build
-- [Linux AppImage](https://worldmonitor.app/api/download?platform=linux-appimage): Linux .AppImage
+- [Windows Installer](https://46.62.167.252/api/download?platform=windows-exe): Windows .exe installer
+- [macOS Apple Silicon](https://46.62.167.252/api/download?platform=macos-arm64): macOS ARM64 build
+- [macOS Intel](https://46.62.167.252/api/download?platform=macos-x64): macOS x64 build
+- [Linux AppImage](https://46.62.167.252/api/download?platform=linux-appimage): Linux .AppImage
 
 ## Tech Stack
 
@@ -57,6 +57,6 @@ The project is built with TypeScript, Vite, MapLibre GL JS, deck.gl, D3.js, and 
 
 ## Optional
 
-- [Source Code](https://github.com/koala73/worldmonitor): GitHub repository (AGPL-3.0)
-- [Releases](https://github.com/koala73/worldmonitor/releases): All desktop releases for macOS, Windows, and Linux
-- [Issues](https://github.com/koala73/worldmonitor/issues): Bug reports and feature requests
+- [Source Code](https://github.com/ntamero/globalpulse): GitHub repository (AGPL-3.0)
+- [Releases](https://github.com/ntamero/globalpulse/releases): All desktop releases for macOS, Windows, and Linux
+- [Issues](https://github.com/ntamero/globalpulse/issues): Bug reports and feature requests

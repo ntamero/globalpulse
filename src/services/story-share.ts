@@ -14,7 +14,7 @@ export function generateStoryDeepLink(
   });
   if (score !== undefined) params.set('s', String(score));
   if (level) params.set('l', level);
-  return `https://worldmonitor.app/api/story?${params.toString()}`;
+  return `http://46.62.167.252/api/story?${params.toString()}`;
 }
 
 // Parse deep link parameters
