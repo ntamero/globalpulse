@@ -5,10 +5,18 @@
  * - Collapsed: pill button showing online count
  * - Expanded: full chat panel with channel tabs, messages, user list
  * - Login: email verification flow
+ * - AI Bot: @pulse mentions trigger AI responses about world events
  */
 
 import { chatService, type ChatChannel, type ChatMessage, type ChatUser } from '@/services/chat';
 import { escapeHtml } from '@/utils/sanitize';
+
+interface AiBotInfo {
+  username: string;
+  color: string;
+  icon: string;
+  hint: string;
+}
 
 interface ChatState {
   phase: 'closed' | 'login' | 'verify' | 'chat';
@@ -24,6 +32,7 @@ interface ChatState {
   typingUsers: Map<string, number>;
   totalOnline: number;
   isConnected: boolean;
+  aiBot: AiBotInfo | null;
 }
 
 export class GlobalChat {
@@ -51,6 +60,7 @@ export class GlobalChat {
       typingUsers: new Map(),
       totalOnline: 0,
       isConnected: false,
+      aiBot: null,
     };
 
     this.setupListeners();
@@ -71,9 +81,10 @@ export class GlobalChat {
         this.render();
       }),
       chatService.on('init', (data: unknown) => {
-        const d = data as { channels: ChatChannel[]; stats: Array<{ id: string; online: number }> };
+        const d = data as { channels: ChatChannel[]; stats: Array<{ id: string; online: number }>; aiBot?: AiBotInfo };
         this.state.channels = d.channels;
         this.state.totalOnline = d.stats.reduce((sum, s) => sum + s.online, 0);
+        if (d.aiBot) this.state.aiBot = d.aiBot;
         this.render();
       }),
       chatService.on('verified', (data: unknown) => {
@@ -166,6 +177,13 @@ export class GlobalChat {
     this.container.remove();
   }
 
+  /**
+   * Feed current news headlines to the chat AI bot for context
+   */
+  public updateNewsContext(headlines: string[]): void {
+    chatService.updateNews(headlines);
+  }
+
   // ============================================
   // Rendering
   // ============================================
@@ -190,7 +208,7 @@ export class GlobalChat {
   private renderClosed(): void {
     const online = this.state.totalOnline;
     this.container.innerHTML = `
-      <button class="gc-fab" id="gcFab" title="Global Chat">
+      <button class="gc-fab" id="gcFab" title="Global Chat — AI-powered discussion">
         <span class="gc-fab-icon">💬</span>
         <span class="gc-fab-badge ${online > 0 ? 'gc-has-users' : ''}">${online || ''}</span>
       </button>
@@ -229,7 +247,7 @@ export class GlobalChat {
           <div class="gc-login-hero">
             <div class="gc-login-emoji">🌍</div>
             <h3 class="gc-login-title">Join the Conversation</h3>
-            <p class="gc-login-desc">Discuss world events in real-time with people around the globe. Verify your email to start chatting.</p>
+            <p class="gc-login-desc">Discuss world events in real-time. Our AI assistant <strong>@pulse</strong> is here to help with insights and analysis.</p>
           </div>
           <div class="gc-login-form">
             <input type="text" class="gc-input" id="gcUsername" placeholder="Username" maxlength="20" autocomplete="off" />
@@ -328,6 +346,7 @@ export class GlobalChat {
 
   private renderChat(): void {
     const channel = this.state.channels.find(c => c.id === this.state.activeChannel);
+    const aiHint = this.state.aiBot?.hint || 'Type @pulse to ask AI';
     this.container.innerHTML = `
       <div class="gc-panel gc-panel-chat">
         <div class="gc-header">
@@ -358,6 +377,12 @@ export class GlobalChat {
           </div>
         </div>
 
+        <div class="gc-ai-hint" id="gcAiHint">
+          <span class="gc-ai-hint-icon">🤖</span>
+          <span class="gc-ai-hint-text">${aiHint}</span>
+          <button class="gc-ai-hint-close" id="gcAiHintClose">×</button>
+        </div>
+
         <div class="gc-messages" id="gcMessages">
           ${this.renderMessageList()}
         </div>
@@ -366,7 +391,7 @@ export class GlobalChat {
 
         <div class="gc-composer">
           <div class="gc-user-badge" style="background:${this.state.userColor}">${this.state.username.charAt(0).toUpperCase()}</div>
-          <input type="text" class="gc-message-input" id="gcInput" placeholder="Type a message..." maxlength="500" autocomplete="off" />
+          <input type="text" class="gc-message-input" id="gcInput" placeholder="Type a message... (@pulse for AI)" maxlength="500" autocomplete="off" />
           <button class="gc-send-btn" id="gcSend" title="Send">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
@@ -387,6 +412,7 @@ export class GlobalChat {
           <span class="gc-empty-icon">${channel?.icon || '💬'}</span>
           <p>No messages yet in ${channel?.name || 'this channel'}.</p>
           <p class="gc-empty-sub">Be the first to start a conversation!</p>
+          <p class="gc-empty-sub gc-empty-ai">💡 Type <strong>@pulse</strong> followed by a question to chat with our AI assistant.</p>
         </div>
       `;
     }
@@ -397,25 +423,33 @@ export class GlobalChat {
 
     for (const msg of this.state.messages) {
       const isOwn = msg.username === this.state.username;
+      const isBot = (msg as ChatMessage & { isBot?: boolean }).isBot || msg.userId === 'ai-bot@globalpulse.system' || msg.username === 'Pulse AI';
       const showHeader = msg.username !== lastUsername || (msg.timestamp - lastTime > 60000);
       const time = new Date(msg.timestamp);
       const timeStr = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;
 
+      const botClass = isBot ? ' gc-msg-bot' : '';
+      const ownClass = isOwn ? ' gc-msg-own' : '';
+
       if (showHeader) {
         html += `
-          <div class="gc-msg ${isOwn ? 'gc-msg-own' : ''}">
+          <div class="gc-msg${ownClass}${botClass}">
             <div class="gc-msg-header">
-              <span class="gc-msg-avatar" style="background:${msg.color}">${msg.username.charAt(0).toUpperCase()}</span>
-              <span class="gc-msg-name" style="color:${msg.color}">${escapeHtml(msg.username)}</span>
+              ${isBot
+                ? '<span class="gc-msg-avatar gc-msg-avatar-bot">🤖</span>'
+                : `<span class="gc-msg-avatar" style="background:${msg.color}">${msg.username.charAt(0).toUpperCase()}</span>`
+              }
+              <span class="gc-msg-name ${isBot ? 'gc-msg-name-bot' : ''}" style="color:${msg.color}">${escapeHtml(msg.username)}</span>
+              ${isBot ? '<span class="gc-bot-badge">AI</span>' : ''}
               <span class="gc-msg-time">${timeStr}</span>
             </div>
-            <div class="gc-msg-text">${msg.content}</div>
+            <div class="gc-msg-text${isBot ? ' gc-msg-text-bot' : ''}">${this.formatMessageContent(msg.content)}</div>
           </div>
         `;
       } else {
         html += `
-          <div class="gc-msg gc-msg-cont ${isOwn ? 'gc-msg-own' : ''}">
-            <div class="gc-msg-text">${msg.content}</div>
+          <div class="gc-msg gc-msg-cont${ownClass}${botClass}">
+            <div class="gc-msg-text${isBot ? ' gc-msg-text-bot' : ''}">${this.formatMessageContent(msg.content)}</div>
           </div>
         `;
       }
@@ -424,6 +458,13 @@ export class GlobalChat {
       lastTime = msg.timestamp;
     }
     return html;
+  }
+
+  /**
+   * Format message content — highlight @pulse mentions
+   */
+  private formatMessageContent(content: string): string {
+    return content.replace(/@pulse/gi, '<span class="gc-mention">@pulse</span>');
   }
 
   // ============================================
@@ -454,7 +495,11 @@ export class GlobalChat {
       el.textContent = '';
       el.style.display = 'none';
     } else if (names.length === 1) {
-      el.textContent = `${names[0]} is typing...`;
+      const name = names[0] as string;
+      const isBot = name === 'Pulse AI';
+      el.innerHTML = isBot
+        ? '<span class="gc-typing-bot">🤖 Pulse AI is thinking...</span>'
+        : `${escapeHtml(name)} is typing...`;
       el.style.display = 'block';
     } else {
       el.textContent = `${names.slice(0, 2).join(', ')} are typing...`;
@@ -503,6 +548,12 @@ export class GlobalChat {
       });
     });
 
+    // AI hint close
+    this.container.querySelector('#gcAiHintClose')?.addEventListener('click', () => {
+      const hint = this.container.querySelector('#gcAiHint') as HTMLElement;
+      if (hint) hint.style.display = 'none';
+    });
+
     // Logout
     this.container.querySelector('#gcLogout')?.addEventListener('click', () => {
       chatService.logout();
@@ -542,6 +593,15 @@ export class GlobalChat {
       if (now - this.lastTypingSent > 2000) {
         this.lastTypingSent = now;
         chatService.sendTyping();
+      }
+    });
+
+    // Auto-complete @pulse on @ key
+    this.container.querySelector('#gcInput')?.addEventListener('input', (e) => {
+      const input = e.target as HTMLInputElement;
+      const val = input.value;
+      if (val.endsWith('@p') || val.endsWith('@P')) {
+        // Don't auto-complete, just let them type
       }
     });
   }

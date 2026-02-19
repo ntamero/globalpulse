@@ -4,6 +4,7 @@
  * WebSocket-based real-time chat with:
  * - Topic-based channels (global, politics, finance, tech, crisis, sports)
  * - Email-verified login (magic code sent to email)
+ * - AI bot (@pulse) that answers questions about world events
  * - Rate limiting and anti-spam
  * - In-memory message store (last 200 per channel)
  * - User presence tracking
@@ -33,6 +34,17 @@ const SESSION_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
 const MAX_USERNAME_LENGTH = 20;
 const PING_INTERVAL = 30000;
 
+// AI Bot configuration
+const AI_BOT = {
+  username: 'Pulse AI',
+  userId: 'ai-bot@globalpulse.system',
+  color: '#3b82f6',
+  icon: '🤖',
+};
+const AI_RATE_LIMIT_WINDOW = 30000; // 30 seconds per channel
+const AI_RATE_LIMIT_MAX = 3; // max 3 AI responses per 30s per channel
+const aiChannelRateLimits = new Map(); // { channelId: [timestamp, ...] }
+
 // ============================================
 // In-memory stores
 // ============================================
@@ -52,6 +64,14 @@ const connectedClients = new Set();
 
 // Rate limiting: { sessionToken: [timestamp, timestamp, ...] }
 const rateLimits = new Map();
+
+// Recent news headlines cache (fed from frontend via WebSocket)
+const recentHeadlines = new Map(); // { channelId: [headlines...] }
+CHANNELS.forEach(ch => recentHeadlines.set(ch.id, []));
+
+// Global news cache (populated from system)
+let globalNewsCache = [];
+let newsCacheTimestamp = 0;
 
 // User colors palette
 const USER_COLORS = [
@@ -113,6 +133,16 @@ function checkRateLimit(sessionToken) {
   return true;
 }
 
+function checkAiRateLimit(channelId) {
+  const now = Date.now();
+  const timestamps = aiChannelRateLimits.get(channelId) || [];
+  const recent = timestamps.filter(t => now - t < AI_RATE_LIMIT_WINDOW);
+  aiChannelRateLimits.set(channelId, recent);
+  if (recent.length >= AI_RATE_LIMIT_MAX) return false;
+  recent.push(now);
+  return true;
+}
+
 function getOnlineUsers(channelId) {
   const users = [];
   const seen = new Set();
@@ -128,6 +158,12 @@ function getOnlineUsers(channelId) {
       }
     }
   }
+  // Always add AI bot to user list
+  users.push({
+    username: AI_BOT.username,
+    color: AI_BOT.color,
+    isBot: true,
+  });
   return users;
 }
 
@@ -167,6 +203,172 @@ setInterval(() => {
     }
   }
 }, 60000);
+
+// ============================================
+// AI Bot — Groq/OpenRouter Integration
+// ============================================
+
+async function callAI(prompt, channelId) {
+  const groqKey = process.env.GROQ_API_KEY;
+  const openrouterKey = process.env.OPENROUTER_API_KEY;
+
+  // Get recent channel messages for context (last 10)
+  const recentMsgs = (channelMessages.get(channelId) || [])
+    .slice(-10)
+    .filter(m => m.userId !== AI_BOT.userId)
+    .map(m => `${m.username}: ${m.content}`)
+    .join('\n');
+
+  // Get recent news context
+  const newsContext = globalNewsCache.length > 0
+    ? '\n\nRecent headlines:\n' + globalNewsCache.slice(0, 15).map((h, i) => `${i + 1}. ${h}`).join('\n')
+    : '';
+
+  const channelInfo = CHANNELS.find(ch => ch.id === channelId);
+  const channelName = channelInfo?.name || 'General';
+
+  const systemPrompt = `You are Pulse AI, an intelligent assistant in the GlobalPulse real-time news dashboard chat room.
+Current date: ${new Date().toISOString().split('T')[0]}.
+Current channel: ${channelName} (${channelInfo?.description || ''}).
+
+Your role:
+- Answer questions about current world events, geopolitics, markets, technology, sports
+- Provide brief, insightful analysis (2-4 sentences max)
+- Be conversational but professional
+- If you don't know something, say so honestly
+- Reference recent news when relevant
+- Stay on-topic for the channel
+- NEVER use markdown headers or bullet points — write in natural conversational style
+- Keep responses under 300 characters when possible, max 450 characters
+- You can use emojis sparingly for emphasis
+
+Recent chat context:
+${recentMsgs || '(no recent messages)'}
+${newsContext}`;
+
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: prompt },
+  ];
+
+  // Try Groq first
+  if (groqKey) {
+    try {
+      const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${groqKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'llama-3.1-8b-instant',
+          messages,
+          temperature: 0.7,
+          max_tokens: 200,
+          top_p: 0.9,
+        }),
+        signal: AbortSignal.timeout(15000),
+      });
+
+      if (resp.ok) {
+        const data = await resp.json();
+        const reply = data.choices?.[0]?.message?.content?.trim();
+        if (reply) return reply;
+      }
+    } catch (err) {
+      console.error('[AI Bot] Groq error:', err.message);
+    }
+  }
+
+  // Fallback: OpenRouter
+  if (openrouterKey) {
+    try {
+      const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openrouterKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'http://46.62.167.252',
+          'X-Title': 'GlobalPulse Chat Bot',
+        },
+        body: JSON.stringify({
+          model: 'openrouter/free',
+          messages,
+          temperature: 0.7,
+          max_tokens: 200,
+        }),
+        signal: AbortSignal.timeout(15000),
+      });
+
+      if (resp.ok) {
+        const data = await resp.json();
+        const reply = data.choices?.[0]?.message?.content?.trim();
+        if (reply) return reply;
+      }
+    } catch (err) {
+      console.error('[AI Bot] OpenRouter error:', err.message);
+    }
+  }
+
+  // Final fallback: no API key
+  return null;
+}
+
+async function handleAiBotMention(content, channelId) {
+  // Check AI rate limit
+  if (!checkAiRateLimit(channelId)) {
+    return 'I\'m getting a lot of questions! Please wait a moment before asking me again. 😊';
+  }
+
+  // Extract the question (remove @pulse prefix)
+  const question = content
+    .replace(/@pulse/gi, '')
+    .replace(/^[\s,.:]+/, '')
+    .trim();
+
+  if (!question) {
+    return 'Hey! Ask me anything about world events, markets, tech, or geopolitics. Just type @pulse followed by your question. 🌍';
+  }
+
+  // Show typing indicator
+  broadcastToChannel(channelId, {
+    type: 'typing',
+    username: AI_BOT.username,
+  });
+
+  const response = await callAI(question, channelId);
+  if (!response) {
+    return 'I\'m having trouble connecting to my brain right now. Try again in a moment! 🔧';
+  }
+
+  return sanitizeText(response);
+}
+
+function postAiMessage(channelId, content) {
+  const chatMessage = {
+    id: generateId(),
+    userId: AI_BOT.userId,
+    username: AI_BOT.username,
+    color: AI_BOT.color,
+    content,
+    timestamp: Date.now(),
+    channel: channelId,
+    isBot: true,
+  };
+
+  // Store message
+  const messages = channelMessages.get(channelId);
+  messages.push(chatMessage);
+  if (messages.length > MAX_MESSAGES_PER_CHANNEL) {
+    messages.splice(0, messages.length - MAX_MESSAGES_PER_CHANNEL);
+  }
+
+  // Broadcast to channel
+  broadcastToChannel(channelId, {
+    type: 'message',
+    message: chatMessage,
+  });
+}
 
 // ============================================
 // Email Sending (SMTP or console fallback)
@@ -246,6 +448,8 @@ function handleMessage(clientInfo, data) {
       return handleSendMessage(clientInfo, msg);
     case 'typing':
       return handleTyping(clientInfo, msg);
+    case 'update-news':
+      return handleUpdateNews(clientInfo, msg);
     case 'pong':
       clientInfo.lastPong = Date.now();
       return;
@@ -430,6 +634,19 @@ function handleSendMessage(clientInfo, msg) {
     type: 'message',
     message: chatMessage,
   });
+
+  // Check if message mentions @pulse — trigger AI bot
+  if (/@pulse/i.test(content)) {
+    const channelId = clientInfo.channel;
+    // Async AI response (don't block)
+    handleAiBotMention(content, channelId).then(reply => {
+      if (reply) {
+        postAiMessage(channelId, reply);
+      }
+    }).catch(err => {
+      console.error('[AI Bot] Error:', err.message);
+    });
+  }
 }
 
 function handleTyping(clientInfo, msg) {
@@ -441,6 +658,14 @@ function handleTyping(clientInfo, msg) {
     type: 'typing',
     username: session.username,
   }, clientInfo.ws);
+}
+
+// Handle news update from frontend (for AI context)
+function handleUpdateNews(clientInfo, msg) {
+  if (msg.headlines && Array.isArray(msg.headlines)) {
+    globalNewsCache = msg.headlines.slice(0, 30);
+    newsCacheTimestamp = Date.now();
+  }
 }
 
 function send(ws, data) {
@@ -462,6 +687,7 @@ export function setupChat(httpServer) {
 
   console.log(`💬 Chat WebSocket ready at /ws/chat`);
   console.log(`   Channels: ${CHANNELS.map(c => c.name).join(', ')}`);
+  console.log(`   AI Bot: ${AI_BOT.username} (mention @pulse to interact)`);
 
   wss.on('connection', (ws, req) => {
     const clientInfo = {
@@ -483,6 +709,12 @@ export function setupChat(httpServer) {
         online: getOnlineUsers(ch.id).length,
         messageCount: (channelMessages.get(ch.id) || []).length,
       })),
+      aiBot: {
+        username: AI_BOT.username,
+        color: AI_BOT.color,
+        icon: AI_BOT.icon,
+        hint: 'Type @pulse to ask AI about world events',
+      },
     });
 
     ws.on('message', (data) => {
@@ -533,6 +765,12 @@ export function setupChatRoutes(app) {
         online: getOnlineUsers(ch.id).length,
         messageCount: (channelMessages.get(ch.id) || []).length,
       })),
+      aiBot: {
+        username: AI_BOT.username,
+        color: AI_BOT.color,
+        icon: AI_BOT.icon,
+        hint: 'Type @pulse to ask AI about world events',
+      },
     });
   });
 
@@ -546,6 +784,27 @@ export function setupChatRoutes(app) {
     res.json({
       channel,
       messages: messages.slice(-50),
+    });
+  });
+
+  // Update news headlines (called from system to give AI context)
+  app.post('/api/chat/news', (req, res) => {
+    // Accept from local or trusted sources only
+    const chunks = [];
+    req.on('data', chunk => chunks.push(chunk));
+    req.on('end', () => {
+      try {
+        const body = JSON.parse(Buffer.concat(chunks).toString());
+        if (body.headlines && Array.isArray(body.headlines)) {
+          globalNewsCache = body.headlines.slice(0, 30);
+          newsCacheTimestamp = Date.now();
+          res.json({ ok: true, count: globalNewsCache.length });
+        } else {
+          res.status(400).json({ error: 'headlines array required' });
+        }
+      } catch {
+        res.status(400).json({ error: 'Invalid JSON' });
+      }
     });
   });
 }

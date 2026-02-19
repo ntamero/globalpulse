@@ -261,6 +261,11 @@ class ChatService {
     this.send({ type: 'typing' });
   }
 
+  /** Send news headlines to chat server for AI context */
+  updateNews(headlines: string[]): void {
+    this.send({ type: 'update-news', headlines });
+  }
+
   /** Logout — clear session and disconnect */
   logout(): void {
     this.clearSession();

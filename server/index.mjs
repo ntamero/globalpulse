@@ -287,6 +287,11 @@ for (const api of VERCEL_APIS) {
 }
 
 // ============================================
+// Chat System (REST API routes — must be before static/SPA fallback)
+// ============================================
+setupChatRoutes(app);
+
+// ============================================
 // Static File Serving (Production Build)
 // ============================================
 
@@ -318,9 +323,8 @@ app.get('*', (req, res) => {
 });
 
 // ============================================
-// Chat System (WebSocket + REST)
+// Chat System (WebSocket)
 // ============================================
-setupChatRoutes(app);
 setupChat(httpServer);
 
 // Start server (use httpServer for WebSocket support)

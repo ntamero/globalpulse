@@ -38,7 +38,7 @@ import { buildMapUrl, debounce, loadFromStorage, parseMapUrlState, saveToStorage
 import { reverseGeocode } from '@/utils/reverse-geocode';
 import { CountryBriefPage } from '@/components/CountryBriefPage';
 import { maybeShowDownloadBanner } from '@/components/DownloadBanner';
-import { mountGlobalChat } from '@/components/GlobalChat';
+import { mountGlobalChat, GlobalChat } from '@/components/GlobalChat';
 import { CountryTimeline, type TimelineEvent } from '@/components/CountryTimeline';
 import { escapeHtml } from '@/utils/sanitize';
 import type { ParsedMapUrlState } from '@/utils';
@@ -160,6 +160,7 @@ export class App {
   private languageSelector: LanguageSelector | null = null;
   private searchModal: SearchModal | null = null;
   private newsTicker: NewsTicker | null = null;
+  private globalChat: GlobalChat | null = null;
   private mobileWarningModal: MobileWarningModal | null = null;
   private pizzintIndicator: PizzIntIndicator | null = null;
   private latestPredictions: PredictionMarket[] = [];
@@ -3446,7 +3447,13 @@ export class App {
     (this.panels['sports'] as SportsPanel)?.updateNews(collectedNews);
 
     maybeShowDownloadBanner();
-    mountGlobalChat();
+    if (!this.globalChat) {
+      this.globalChat = mountGlobalChat();
+    }
+    // Feed AI bot with latest headlines for context
+    this.globalChat.updateNewsContext(
+      collectedNews.slice(0, 25).map(n => `[${n.source}] ${n.title}`)
+    );
     // Temporal baseline: report news volume
     updateAndCheck([
       { type: 'news', region: 'global', count: collectedNews.length },

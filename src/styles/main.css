@@ -14648,6 +14648,107 @@ body.has-critical-banner .panels-grid {
   color: var(--text, #f0f0f0);
 }
 
+/* AI Bot messages */
+.gc-msg-bot {
+  background: rgba(59, 130, 246, 0.06);
+  border-left: 2px solid #3b82f6;
+  padding: 6px 0;
+  margin: 4px 0;
+  border-radius: 0 6px 6px 0;
+}
+
+.gc-msg-avatar-bot {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
+  font-size: 14px !important;
+}
+
+.gc-msg-name-bot {
+  color: #3b82f6 !important;
+  font-weight: 700;
+}
+
+.gc-bot-badge {
+  display: inline-block;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
+.gc-msg-text-bot {
+  color: var(--text, #d0d8e8) !important;
+  font-style: normal;
+}
+
+/* @pulse mention highlight */
+.gc-mention {
+  color: #3b82f6;
+  font-weight: 600;
+  background: rgba(59, 130, 246, 0.12);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+/* AI hint banner */
+.gc-ai-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.12), rgba(139, 92, 246, 0.08));
+  border-bottom: 1px solid rgba(59, 130, 246, 0.15);
+  font-size: 11px;
+  color: var(--text-muted, #aaa);
+  flex-shrink: 0;
+}
+
+.gc-ai-hint-icon {
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.gc-ai-hint-text {
+  flex: 1;
+}
+
+.gc-ai-hint-close {
+  background: none;
+  border: none;
+  color: var(--text-ghost, #666);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+
+.gc-ai-hint-close:hover {
+  opacity: 1;
+}
+
+/* Typing indicator — bot variant */
+.gc-typing-bot {
+  color: #3b82f6;
+  font-weight: 500;
+}
+
+/* Empty state — AI hint */
+.gc-empty-ai {
+  color: var(--text-ghost, #666);
+  font-size: 11px;
+  margin-top: 8px;
+}
+
+.gc-empty-ai strong {
+  color: #3b82f6;
+}
+
 /* Typing indicator */
 .gc-typing {
   padding: 0 14px;
