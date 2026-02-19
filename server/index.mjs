@@ -4,12 +4,15 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 import { readFileSync, existsSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { createServer } from 'http';
+import { setupChat, setupChatRoutes } from './chat.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const DIST = resolve(ROOT, 'dist');
 
 const app = express();
+const httpServer = createServer(app);
 const PORT = process.env.PORT || 3000;
 
 // Compression
@@ -311,9 +314,16 @@ app.get('*', (req, res) => {
   res.sendFile(resolve(DIST, 'index.html'));
 });
 
-// Start server
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🌍 GlobalPulse (WorldMonitor) server running on port ${PORT}`);
+// ============================================
+// Chat System (WebSocket + REST)
+// ============================================
+setupChatRoutes(app);
+setupChat(httpServer);
+
+// Start server (use httpServer for WebSocket support)
+httpServer.listen(PORT, '0.0.0.0', () => {
+  console.log(`🌍 GlobalPulse server running on port ${PORT}`);
   console.log(`   Frontend: http://0.0.0.0:${PORT}`);
   console.log(`   API proxies: ${Object.keys(RSS_PROXIES).length} RSS + ${VERCEL_APIS.length} API handlers`);
+  console.log(`   Chat WebSocket: ws://0.0.0.0:${PORT}/ws/chat`);
 });
