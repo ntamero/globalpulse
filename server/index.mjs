@@ -97,46 +97,16 @@ for (const [path, target] of Object.entries(RSS_PROXIES)) {
 // API Proxy Routes
 // ============================================
 
-// Yahoo Finance
-app.use('/api/yahoo', createProxyMiddleware({
-  target: 'https://query1.finance.yahoo.com',
-  changeOrigin: true,
-  pathRewrite: { '^/api/yahoo': '' },
-  timeout: 15000,
-  on: { error: (err, req, res) => { if (!res.headersSent) res.status(502).json({ error: 'Yahoo proxy error' }); } },
-}));
+// ============================================
+// Direct Proxy Routes (only for APIs without Vercel edge handlers)
+// APIs with Vercel handlers (api/*.js) are loaded below via vercelEdgeAdapter
+// ============================================
 
-// CoinGecko
-app.use('/api/coingecko', (req, res, next) => {
-  const params = new URLSearchParams(req.url.includes('?') ? req.url.split('?')[1] : '');
-  if (params.get('endpoint') === 'markets') {
-    params.delete('endpoint');
-    const vs = params.get('vs_currencies') || 'usd';
-    params.delete('vs_currencies');
-    params.set('vs_currency', vs);
-    params.set('sparkline', 'true');
-    params.set('order', 'market_cap_desc');
-    req.url = `/api/v3/coins/markets?${params.toString()}`;
-  } else {
-    const qs = req.url.includes('?') ? req.url.split('?')[1] : '';
-    req.url = `/api/v3/simple/price?${qs}`;
-  }
-  next();
-}, createProxyMiddleware({
-  target: 'https://api.coingecko.com',
-  changeOrigin: true,
-  timeout: 15000,
-  on: { error: (err, req, res) => { if (!res.headersSent) res.status(502).json({ error: 'CoinGecko proxy error' }); } },
-}));
+// Note: Yahoo Finance handled by Vercel edge handler (yahoo-finance.js)
+// No direct proxy needed — the handler fetches from Yahoo API directly
 
-// USGS Earthquake
-app.use('/api/earthquake', createProxyMiddleware({
-  target: 'https://earthquake.usgs.gov',
-  changeOrigin: true,
-  pathRewrite: { '^/api/earthquake': '' },
-  timeout: 30000,
-  on: { error: (err, req, res) => { if (!res.headersSent) res.status(502).json({ error: 'Earthquake proxy error' }); } },
-}));
+// Note: Earthquakes handled by Vercel edge handler (earthquakes.js)
+// No direct proxy needed — the handler fetches from USGS API directly
 
 // PizzINT
 app.use('/api/pizzint', createProxyMiddleware({
@@ -162,45 +132,11 @@ app.use('/api/nga-msi', createProxyMiddleware({
   on: { error: (err, req, res) => { if (!res.headersSent) res.status(502).json({ error: 'NGA proxy error' }); } },
 }));
 
-// ACLED
-app.use('/api/acled', createProxyMiddleware({
-  target: 'https://acleddata.com',
-  changeOrigin: true,
-  pathRewrite: { '^/api/acled': '' },
-  on: { error: (err, req, res) => { if (!res.headersSent) res.status(502).json({ error: 'ACLED proxy error' }); } },
-}));
+// Note: GDELT handled by Vercel edge handlers (gdelt-doc.js, gdelt-geo.js)
+// No direct proxy needed — the handlers fetch from GDELT API directly
 
-// GDELT GEO (must come before /api/gdelt)
-app.use('/api/gdelt-geo', createProxyMiddleware({
-  target: 'https://api.gdeltproject.org',
-  changeOrigin: true,
-  pathRewrite: { '^/api/gdelt-geo': '/api/v2/geo/geo' },
-  on: { error: (err, req, res) => { if (!res.headersSent) res.status(502).json({ error: 'GDELT geo proxy error' }); } },
-}));
-
-// GDELT
-app.use('/api/gdelt', createProxyMiddleware({
-  target: 'https://api.gdeltproject.org',
-  changeOrigin: true,
-  pathRewrite: { '^/api/gdelt': '' },
-  on: { error: (err, req, res) => { if (!res.headersSent) res.status(502).json({ error: 'GDELT proxy error' }); } },
-}));
-
-// FAA NASSTATUS
-app.use('/api/faa', createProxyMiddleware({
-  target: 'https://nasstatus.faa.gov',
-  changeOrigin: true,
-  pathRewrite: { '^/api/faa': '' },
-  on: { error: (err, req, res) => { if (!res.headersSent) res.status(502).json({ error: 'FAA proxy error' }); } },
-}));
-
-// OpenSky
-app.use('/api/opensky', createProxyMiddleware({
-  target: 'https://opensky-network.org/api',
-  changeOrigin: true,
-  pathRewrite: { '^/api/opensky': '' },
-  on: { error: (err, req, res) => { if (!res.headersSent) res.status(502).json({ error: 'OpenSky proxy error' }); } },
-}));
+// Note: FAA handled by Vercel edge handler (faa-status.js)
+// No direct proxy needed — the handler fetches from FAA API directly
 
 // ADS-B Exchange
 app.use('/api/adsb-exchange', createProxyMiddleware({
@@ -208,14 +144,6 @@ app.use('/api/adsb-exchange', createProxyMiddleware({
   changeOrigin: true,
   pathRewrite: { '^/api/adsb-exchange': '' },
   on: { error: (err, req, res) => { if (!res.headersSent) res.status(502).json({ error: 'ADS-B proxy error' }); } },
-}));
-
-// Polymarket - proxy to gamma API
-app.use('/api/polymarket', createProxyMiddleware({
-  target: 'https://gamma-api.polymarket.com',
-  changeOrigin: true,
-  pathRewrite: { '^/api/polymarket': '' },
-  on: { error: (err, req, res) => { if (!res.headersSent) res.status(502).json({ error: 'Polymarket proxy error' }); } },
 }));
 
 // YouTube Live API
@@ -244,6 +172,20 @@ async function loadVercelHandler(apiPath) {
   }
 }
 
+// Collect raw body for POST/PUT/PATCH requests
+app.use('/api', (req, res, next) => {
+  if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
+    const chunks = [];
+    req.on('data', (chunk) => chunks.push(chunk));
+    req.on('end', () => {
+      req.rawBody = Buffer.concat(chunks);
+      next();
+    });
+  } else {
+    next();
+  }
+});
+
 // Adapt Vercel Edge handler to Express
 function vercelEdgeAdapter(handlerPath) {
   return async (req, res) => {
@@ -253,10 +195,16 @@ function vercelEdgeAdapter(handlerPath) {
 
       // Build a Web API Request from Express req
       const url = new URL(req.originalUrl, `http://${req.headers.host || 'localhost'}`);
-      const webRequest = new Request(url.toString(), {
+      const requestInit = {
         method: req.method,
         headers: new Headers(req.headers),
-      });
+      };
+      // Forward body for POST/PUT/PATCH
+      if (['POST', 'PUT', 'PATCH'].includes(req.method) && req.rawBody?.length) {
+        requestInit.body = req.rawBody;
+        requestInit.duplex = 'half';
+      }
+      const webRequest = new Request(url.toString(), requestInit);
 
       const webResponse = await handler(webRequest);
 
