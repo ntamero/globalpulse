@@ -38,6 +38,18 @@ const categoryColors: Record<string, string> = {
   humanitarian: '#f59e0b',
 };
 
+function guessCategory(text: string): string {
+  const t = text.toLowerCase();
+  if (t.includes('conflict') || t.includes('attack') || t.includes('military') || t.includes('war') || t.includes('bomb')) return 'conflict';
+  if (t.includes('protest') || t.includes('rally') || t.includes('demonstrat')) return 'protests';
+  if (t.includes('sanction') || t.includes('embargo')) return 'sanctions';
+  if (t.includes('diplomat') || t.includes('summit') || t.includes('treaty') || t.includes('negotiat')) return 'diplomacy';
+  if (t.includes('economy') || t.includes('market') || t.includes('trade') || t.includes('inflation')) return 'economy';
+  if (t.includes('earthquake') || t.includes('flood') || t.includes('humanitarian') || t.includes('refugee')) return 'humanitarian';
+  if (t.includes('cyber') || t.includes('internet') || t.includes('outage') || t.includes('hack')) return 'internet';
+  return 'military';
+}
+
 function getMarkerRadius(severity: number): number {
   if (severity >= 9) return 12;
   if (severity >= 7) return 10;
@@ -62,51 +74,86 @@ export default function WorldMap() {
   }, []);
 
   useEffect(() => {
-    // Start with mock data immediately so UI renders
     setEvents(getMockEvents());
 
-    // Then try to fetch real data
-    async function loadMapEvents() {
+    async function loadAllMapData() {
+      const allEvents: EventItem[] = [];
+
+      // 1. Try backend events
       try {
         const res = await fetch('/api/events/map');
         if (res.ok) {
           const data = await res.json();
-          // Backend returns {markers: [...]} or {items: [...]} or {events: [...]} or plain array
-          const items = Array.isArray(data)
-            ? data
-            : Array.isArray(data?.markers)
-            ? data.markers
-            : Array.isArray(data?.items)
-            ? data.items
-            : Array.isArray(data?.events)
-            ? data.events
-            : [];
-          if (items.length > 0) {
-            // Normalize backend marker format (latitude/longitude) to EventItem format (location.lat/lng)
-            const normalized = items.map((m: any) => ({
-              id: m.id || String(Math.random()),
-              title: m.title || '',
-              description: m.description || '',
-              category: m.category || 'general',
-              severity: m.severity || 5,
-              timestamp: m.timestamp || new Date().toISOString(),
-              sources: m.sources || [],
-              is_developing: m.is_developing || false,
-              location: m.location || (m.latitude && m.longitude ? {
-                lat: m.latitude,
-                lng: m.longitude,
-                name: m.city || m.country || '',
-                country: m.country || '',
-              } : undefined),
-            }));
-            setEvents(normalized);
-          }
+          const items = Array.isArray(data) ? data
+            : Array.isArray(data?.markers) ? data.markers
+            : Array.isArray(data?.items) ? data.items
+            : Array.isArray(data?.events) ? data.events : [];
+          items.forEach((m: any) => {
+            const loc = m.location || (m.latitude && m.longitude ? { lat: m.latitude, lng: m.longitude, name: m.city || m.country || '', country: m.country || '' } : undefined);
+            if (loc) allEvents.push({ id: m.id || String(Math.random()), title: m.title || '', description: m.description || '', category: m.category || 'general', severity: m.severity || 5, timestamp: m.timestamp || new Date().toISOString(), sources: m.sources || [], is_developing: m.is_developing || false, location: loc });
+          });
         }
-      } catch {
-        // keep mock data
+      } catch {}
+
+      // 2. Fetch GDELT real-time geolocated events
+      try {
+        const res = await fetch('/api/realtime/gdelt?query=crisis+OR+conflict+OR+protest&maxrecords=200&timespan=7d');
+        if (res.ok) {
+          const geo = await res.json();
+          const features = geo?.features || [];
+          features.forEach((f: any) => {
+            const coords = f.geometry?.coordinates;
+            const props = f.properties || {};
+            if (coords && coords.length >= 2) {
+              allEvents.push({
+                id: `gdelt-${props.urlpubtimedate || Math.random()}`,
+                title: props.name || props.html || 'GDELT Event',
+                description: props.shareimage ? '' : (props.html || '').slice(0, 200),
+                category: guessCategory(props.name || ''),
+                severity: Math.min(10, Math.max(3, (props.goldsteinscale ? Math.abs(props.goldsteinscale) : 5))),
+                timestamp: props.urlpubtimedate || new Date().toISOString(),
+                sources: [{ name: props.domain || 'GDELT', url: props.url || '' }],
+                is_developing: false,
+                location: { lat: coords[1], lng: coords[0], name: props.name || '', country: '' },
+              });
+            }
+          });
+        }
+      } catch {}
+
+      // 3. Fetch USGS earthquakes
+      try {
+        const res = await fetch('/api/realtime/earthquakes');
+        if (res.ok) {
+          const data = await res.json();
+          const features = data?.features || [];
+          features.forEach((f: any) => {
+            const coords = f.geometry?.coordinates;
+            const props = f.properties || {};
+            if (coords && coords.length >= 2) {
+              allEvents.push({
+                id: `eq-${f.id || Math.random()}`,
+                title: `Earthquake M${props.mag?.toFixed(1)} - ${props.place || 'Unknown'}`,
+                description: `Magnitude ${props.mag?.toFixed(1)}, Depth: ${coords[2]?.toFixed(0)}km`,
+                category: 'humanitarian',
+                severity: Math.min(10, Math.round((props.mag || 4) * 1.2)),
+                timestamp: props.time ? new Date(props.time).toISOString() : new Date().toISOString(),
+                sources: [{ name: 'USGS', url: props.url || '' }],
+                is_developing: true,
+                location: { lat: coords[1], lng: coords[0], name: props.place || '', country: '' },
+              });
+            }
+          });
+        }
+      } catch {}
+
+      if (allEvents.length > 0) {
+        setEvents(allEvents);
       }
     }
-    loadMapEvents();
+    loadAllMapData();
+    const interval = setInterval(loadAllMapData, 120000); // Refresh every 2 min
+    return () => clearInterval(interval);
   }, []);
 
   const eventsWithLocation = useMemo(
