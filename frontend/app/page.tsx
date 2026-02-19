@@ -1,21 +1,46 @@
 'use client';
 
-import Header from '@/components/Layout/Header';
-import BreakingTicker from '@/components/Dashboard/BreakingTicker';
-import AIBriefing from '@/components/Dashboard/AIBriefing';
-import LatestHeadlines from '@/components/Dashboard/LatestHeadlines';
-import WorldMap from '@/components/Dashboard/WorldMap';
-import EventsTimeline from '@/components/Dashboard/EventsTimeline';
-import LiveFeed from '@/components/Dashboard/LiveFeed';
-import LiveMedia from '@/components/Dashboard/LiveMedia';
-import MarketWidget from '@/components/Dashboard/MarketWidget';
-import InternetStatus from '@/components/Dashboard/InternetStatus';
-import VideoShorts from '@/components/Dashboard/VideoShorts';
-import GlobalChat from '@/components/Dashboard/GlobalChat';
-import AITechHub from '@/components/Dashboard/AITechHub';
-import SportsHub from '@/components/Dashboard/SportsHub';
+import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
+
+// Dynamically import all dashboard components with { ssr: false }
+// This eliminates ALL hydration mismatches by only rendering on the client
+const Header = dynamic(() => import('@/components/Layout/Header'), { ssr: false });
+const BreakingTicker = dynamic(() => import('@/components/Dashboard/BreakingTicker'), { ssr: false });
+const AIBriefing = dynamic(() => import('@/components/Dashboard/AIBriefing'), { ssr: false });
+const LatestHeadlines = dynamic(() => import('@/components/Dashboard/LatestHeadlines'), { ssr: false });
+const WorldMap = dynamic(() => import('@/components/Dashboard/WorldMap'), { ssr: false });
+const EventsTimeline = dynamic(() => import('@/components/Dashboard/EventsTimeline'), { ssr: false });
+const LiveFeed = dynamic(() => import('@/components/Dashboard/LiveFeed'), { ssr: false });
+const LiveMedia = dynamic(() => import('@/components/Dashboard/LiveMedia'), { ssr: false });
+const MarketWidget = dynamic(() => import('@/components/Dashboard/MarketWidget'), { ssr: false });
+const InternetStatus = dynamic(() => import('@/components/Dashboard/InternetStatus'), { ssr: false });
+const VideoShorts = dynamic(() => import('@/components/Dashboard/VideoShorts'), { ssr: false });
+const GlobalChat = dynamic(() => import('@/components/Dashboard/GlobalChat'), { ssr: false });
+const AITechHub = dynamic(() => import('@/components/Dashboard/AITechHub'), { ssr: false });
+const SportsHub = dynamic(() => import('@/components/Dashboard/SportsHub'), { ssr: false });
 
 export default function HomePage() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Show a minimal loading shell during SSR and first client render
+  // This prevents ANY hydration mismatch since both server and client
+  // render the same loading skeleton
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-dark-900 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
+          <div className="text-sm text-dark-400 font-medium">Loading GlobalPulse...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div id="top" className="min-h-screen bg-dark-900">
       <Header />

@@ -32,20 +32,30 @@ const TRENDING_TOPICS = [
   'AI in Healthcare', 'Autonomous Vehicles', 'AI Music Generation', 'Digital Twins', 'AGI Debate',
 ];
 
-const MOCK_AI_NEWS: AINewsItem[] = [
-  { id: 'ai1', title: 'OpenAI Announces GPT-5 with Native Multimodal Reasoning', summary: 'The new model demonstrates breakthrough capabilities in complex reasoning, visual understanding, and real-time audio processing with significantly reduced hallucination rates.', source: 'TechCrunch', url: '#', category: 'AI Models', published_at: new Date(Date.now() - 15 * 60000).toISOString() },
-  { id: 'ai2', title: 'Anthropic Publishes Constitutional AI Safety Breakthrough', summary: 'New research paper details a novel approach to AI alignment that significantly improves safety without sacrificing performance on key benchmarks.', source: 'MIT Tech Review', url: '#', category: 'Research', published_at: new Date(Date.now() - 45 * 60000).toISOString() },
-  { id: 'ai3', title: 'Meta Releases Open Source LLM Surpassing GPT-4 Turbo', summary: 'Llama 4 demonstrates superior performance across 15 major benchmarks while being fully open-source and optimizable for consumer hardware.', source: 'The Verge', url: '#', category: 'AI Models', published_at: new Date(Date.now() - 2 * 3600000).toISOString() },
-  { id: 'ai4', title: 'Google DeepMind Unveils AI Agent That Writes & Deploys Software', summary: 'Project Mariner can autonomously write, test, debug, and deploy full-stack applications from natural language specifications.', source: 'Ars Technica', url: '#', category: 'Agents', published_at: new Date(Date.now() - 3 * 3600000).toISOString() },
-  { id: 'ai5', title: 'New AI Prompt Engineering Framework Doubles Output Quality', summary: 'Researchers discover systematic prompt patterns that consistently improve LLM outputs across coding, writing, and analysis tasks.', source: 'VentureBeat', url: '#', category: 'Prompts & Skills', published_at: new Date(Date.now() - 4 * 3600000).toISOString() },
-  { id: 'ai6', title: 'Boston Dynamics Robot Learns Tasks from Single Video Demonstration', summary: 'New AI system enables humanoid robots to learn complex physical tasks by watching a single demonstration video, no coding required.', source: 'Wired', url: '#', category: 'Robotics', published_at: new Date(Date.now() - 5 * 3600000).toISOString() },
-  { id: 'ai7', title: 'AI Startup Raises $2B to Build Personal AI Assistant', summary: 'Founded by former Google Brain researchers, the company aims to create an AI that manages your entire digital life across all devices.', source: 'TechCrunch', url: '#', category: 'Startups', published_at: new Date(Date.now() - 6 * 3600000).toISOString() },
-  { id: 'ai8', title: 'EU Passes Comprehensive AI Act with Strict Enforcement Rules', summary: 'Landmark legislation establishes tiered risk categories for AI systems with heavy fines for non-compliance starting 2026.', source: 'Reuters', url: '#', category: 'Research', published_at: new Date(Date.now() - 7 * 3600000).toISOString() },
-  { id: 'ai9', title: 'Claude AI Agents Can Now Browse Web and Execute Code Autonomously', summary: 'Anthropic releases agentic capabilities letting Claude perform multi-step tasks across web, files, and code environments.', source: 'The Verge', url: '#', category: 'Agents', published_at: new Date(Date.now() - 8 * 3600000).toISOString() },
-  { id: 'ai10', title: 'NVIDIA Reveals Next-Gen AI Chip with 3x Performance Per Watt', summary: 'Blackwell Ultra architecture promises to dramatically reduce the cost of AI training and inference for enterprise customers.', source: 'Ars Technica', url: '#', category: 'Startups', published_at: new Date(Date.now() - 9 * 3600000).toISOString() },
-  { id: 'ai11', title: 'Figure AI Robot Handles Warehouse Tasks Better Than Humans', summary: 'New benchmarks show Figure 02 humanoid completing pick-and-pack operations 40% faster with 99.7% accuracy rate.', source: 'Wired', url: '#', category: 'Robotics', published_at: new Date(Date.now() - 10 * 3600000).toISOString() },
-  { id: 'ai12', title: 'Breakthrough: AI System Discovers New Antibiotic Compound', summary: 'MIT researchers use AI to identify a novel antibiotic effective against drug-resistant bacteria, potentially saving millions of lives.', source: 'MIT Tech Review', url: '#', category: 'Research', published_at: new Date(Date.now() - 12 * 3600000).toISOString() },
+// Timestamps generated lazily (NOT at module load) to avoid SSR/client mismatch
+const MOCK_AI_NEWS_TEMPLATES = [
+  { id: 'ai1', title: 'OpenAI Announces GPT-5 with Native Multimodal Reasoning', summary: 'The new model demonstrates breakthrough capabilities in complex reasoning, visual understanding, and real-time audio processing with significantly reduced hallucination rates.', source: 'TechCrunch', url: '#', category: 'AI Models', ageMs: 15 * 60000 },
+  { id: 'ai2', title: 'Anthropic Publishes Constitutional AI Safety Breakthrough', summary: 'New research paper details a novel approach to AI alignment that significantly improves safety without sacrificing performance on key benchmarks.', source: 'MIT Tech Review', url: '#', category: 'Research', ageMs: 45 * 60000 },
+  { id: 'ai3', title: 'Meta Releases Open Source LLM Surpassing GPT-4 Turbo', summary: 'Llama 4 demonstrates superior performance across 15 major benchmarks while being fully open-source and optimizable for consumer hardware.', source: 'The Verge', url: '#', category: 'AI Models', ageMs: 2 * 3600000 },
+  { id: 'ai4', title: 'Google DeepMind Unveils AI Agent That Writes & Deploys Software', summary: 'Project Mariner can autonomously write, test, debug, and deploy full-stack applications from natural language specifications.', source: 'Ars Technica', url: '#', category: 'Agents', ageMs: 3 * 3600000 },
+  { id: 'ai5', title: 'New AI Prompt Engineering Framework Doubles Output Quality', summary: 'Researchers discover systematic prompt patterns that consistently improve LLM outputs across coding, writing, and analysis tasks.', source: 'VentureBeat', url: '#', category: 'Prompts & Skills', ageMs: 4 * 3600000 },
+  { id: 'ai6', title: 'Boston Dynamics Robot Learns Tasks from Single Video Demonstration', summary: 'New AI system enables humanoid robots to learn complex physical tasks by watching a single demonstration video, no coding required.', source: 'Wired', url: '#', category: 'Robotics', ageMs: 5 * 3600000 },
+  { id: 'ai7', title: 'AI Startup Raises $2B to Build Personal AI Assistant', summary: 'Founded by former Google Brain researchers, the company aims to create an AI that manages your entire digital life across all devices.', source: 'TechCrunch', url: '#', category: 'Startups', ageMs: 6 * 3600000 },
+  { id: 'ai8', title: 'EU Passes Comprehensive AI Act with Strict Enforcement Rules', summary: 'Landmark legislation establishes tiered risk categories for AI systems with heavy fines for non-compliance starting 2026.', source: 'Reuters', url: '#', category: 'Research', ageMs: 7 * 3600000 },
+  { id: 'ai9', title: 'Claude AI Agents Can Now Browse Web and Execute Code Autonomously', summary: 'Anthropic releases agentic capabilities letting Claude perform multi-step tasks across web, files, and code environments.', source: 'The Verge', url: '#', category: 'Agents', ageMs: 8 * 3600000 },
+  { id: 'ai10', title: 'NVIDIA Reveals Next-Gen AI Chip with 3x Performance Per Watt', summary: 'Blackwell Ultra architecture promises to dramatically reduce the cost of AI training and inference for enterprise customers.', source: 'Ars Technica', url: '#', category: 'Startups', ageMs: 9 * 3600000 },
+  { id: 'ai11', title: 'Figure AI Robot Handles Warehouse Tasks Better Than Humans', summary: 'New benchmarks show Figure 02 humanoid completing pick-and-pack operations 40% faster with 99.7% accuracy rate.', source: 'Wired', url: '#', category: 'Robotics', ageMs: 10 * 3600000 },
+  { id: 'ai12', title: 'Breakthrough: AI System Discovers New Antibiotic Compound', summary: 'MIT researchers use AI to identify a novel antibiotic effective against drug-resistant bacteria, potentially saving millions of lives.', source: 'MIT Tech Review', url: '#', category: 'Research', ageMs: 12 * 3600000 },
 ];
+
+function generateMockAINews(): AINewsItem[] {
+  const now = Date.now();
+  return MOCK_AI_NEWS_TEMPLATES.map((t) => ({
+    id: t.id, title: t.title, summary: t.summary, source: t.source,
+    url: t.url, category: t.category,
+    published_at: new Date(now - t.ageMs).toISOString(),
+  }));
+}
 
 function formatTime(dateStr: string): string {
   try {
@@ -63,10 +73,15 @@ function formatTime(dateStr: string): string {
 }
 
 export default function AITechHub() {
-  const [news, setNews] = useState<AINewsItem[]>(MOCK_AI_NEWS);
+  const [news, setNews] = useState<AINewsItem[]>([]);
   const [activeCategory, setActiveCategory] = useState('All');
   const [lastUpdate, setLastUpdate] = useState<number>(0);
   const tickerRef = useRef<HTMLDivElement>(null);
+
+  // Initialize mock data on mount (client-only)
+  useEffect(() => {
+    setNews(generateMockAINews());
+  }, []);
 
   // Fetch real AI/tech news from API
   const fetchNews = useCallback(async () => {

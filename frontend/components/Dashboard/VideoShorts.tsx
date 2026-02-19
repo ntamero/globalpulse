@@ -38,15 +38,18 @@ export default function VideoShorts() {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [likes, setLikes] = useState<Record<string, boolean>>({});
-  const [likeCounts, setLikeCounts] = useState<Record<string, number>>(() => {
-    const counts: Record<string, number> = {};
-    SHORTS_DATA.forEach(v => { counts[v.id] = Math.floor(Math.random() * 50000) + 1000; });
-    return counts;
-  });
+  const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
   const [saved, setSaved] = useState<Record<string, boolean>>({});
   const [showEmoji, setShowEmoji] = useState(false);
   const [floatingEmojis, setFloatingEmojis] = useState<{ id: number; emoji: string; x: number }[]>([]);
   const emojiIdRef = useRef(0);
+
+  // Initialize like counts on client only (avoids SSR/client mismatch from Math.random)
+  useEffect(() => {
+    const counts: Record<string, number> = {};
+    SHORTS_DATA.forEach(v => { counts[v.id] = Math.floor(Math.random() * 50000) + 1000; });
+    setLikeCounts(counts);
+  }, []);
 
   const selectedVideo = selectedIndex !== null ? SHORTS_DATA[selectedIndex] : null;
 
@@ -235,7 +238,7 @@ export default function VideoShorts() {
                 <div className="w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all">
                   <MessageCircle size={22} className="text-white" />
                 </div>
-                <span className="text-white text-2xs font-medium">{Math.floor(Math.random() * 999) + 100}</span>
+                <span className="text-white text-2xs font-medium">247</span>
               </button>
 
               {/* Share */}
