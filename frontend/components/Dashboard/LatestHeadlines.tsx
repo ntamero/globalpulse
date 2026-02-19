@@ -48,14 +48,38 @@ function guessCategoryFromTitle(title: string, source: string): string {
 }
 
 function formatRelativeTime(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'now';
-  if (mins < 60) return `${mins}m`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h`;
-  const days = Math.floor(hours / 24);
-  return `${days}d`;
+  try {
+    const ts = new Date(dateStr).getTime();
+    if (isNaN(ts)) return '';
+    const diff = Date.now() - ts;
+    if (diff < 0) return 'now';
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'now';
+    if (mins < 60) return `${mins}m`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h`;
+    const days = Math.floor(hours / 24);
+    return `${days}d`;
+  } catch {
+    return '';
+  }
+}
+
+function parseGdeltDate(raw: string): string {
+  // GDELT dates: "20260219T143000Z" -> "2026-02-19T14:30:00Z"
+  if (!raw) return new Date().toISOString();
+  try {
+    if (/^\d{8}T\d{6}Z?$/.test(raw)) {
+      const y = raw.slice(0, 4), m = raw.slice(4, 6), d = raw.slice(6, 8);
+      const H = raw.slice(9, 11), M = raw.slice(11, 13), S = raw.slice(13, 15);
+      return `${y}-${m}-${d}T${H}:${M}:${S}Z`;
+    }
+    const ts = new Date(raw).getTime();
+    if (isNaN(ts)) return new Date().toISOString();
+    return new Date(ts).toISOString();
+  } catch {
+    return new Date().toISOString();
+  }
 }
 
 function extractDomain(url: string): string {
@@ -74,8 +98,11 @@ export default function LatestHeadlines() {
   const [headlines, setHeadlines] = useState<HeadlineItem[]>([]);
   const [activeCategory, setActiveCategory] = useState('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const [lastUpdate, setLastUpdate] = useState<string>('');
+  const [isClient, setIsClient] = useState(false);
   const [source, setSource] = useState<'gdelt' | 'backend' | 'mock'>('mock');
+
+  useEffect(() => { setIsClient(true); }, []);
 
   const loadHeadlines = useCallback(async () => {
     setIsRefreshing(true);
@@ -98,9 +125,7 @@ export default function LatestHeadlines() {
               url: a.url || '#',
               source: a.domain || domain || 'Unknown',
               sourceDomain: domain,
-              published_at: a.seendate ? new Date(
-                a.seendate.replace(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z/, '$1-$2-$3T$4:$5:$6Z')
-              ).toISOString() : new Date().toISOString(),
+              published_at: parseGdeltDate(a.seendate || ''),
               image_url: a.socialimage || '',
               language: a.language || 'English',
               category: cat,
@@ -152,7 +177,7 @@ export default function LatestHeadlines() {
     if (unique.length > 0) {
       setHeadlines(unique);
     }
-    setLastUpdate(new Date());
+    setLastUpdate(new Date().toISOString());
     setIsRefreshing(false);
   }, [activeCategory]);
 
@@ -188,7 +213,7 @@ export default function LatestHeadlines() {
         <button onClick={loadHeadlines} disabled={isRefreshing}
           className="flex items-center gap-1 text-2xs text-dark-500 hover:text-dark-300 transition-colors">
           <RefreshCw size={12} className={isRefreshing ? 'animate-spin' : ''} />
-          <span className="hidden sm:inline">{formatRelativeTime(lastUpdate.toISOString())}</span>
+          {isClient && lastUpdate && <span className="hidden sm:inline">{formatRelativeTime(lastUpdate)}</span>}
         </button>
       </div>
 

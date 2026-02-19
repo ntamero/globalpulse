@@ -48,19 +48,24 @@ const MOCK_AI_NEWS: AINewsItem[] = [
 ];
 
 function formatTime(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
+  try {
+    const ts = new Date(dateStr).getTime();
+    if (isNaN(ts)) return '';
+    const diff = Date.now() - ts;
+    if (diff < 0) return 'just now';
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return `${Math.floor(hours / 24)}d ago`;
+  } catch { return ''; }
 }
 
 export default function AITechHub() {
   const [news, setNews] = useState<AINewsItem[]>(MOCK_AI_NEWS);
   const [activeCategory, setActiveCategory] = useState('All');
-  const [lastUpdate, setLastUpdate] = useState(new Date());
+  const [lastUpdate, setLastUpdate] = useState<number>(0);
   const tickerRef = useRef<HTMLDivElement>(null);
 
   // Fetch real AI/tech news from API
@@ -84,7 +89,7 @@ export default function AITechHub() {
         setNews(normalized);
       }
     } catch { /* keep mock data */ }
-    setLastUpdate(new Date());
+    setLastUpdate(Date.now());
   }, []);
 
   useEffect(() => {
@@ -109,7 +114,7 @@ export default function AITechHub() {
             <span className="text-2xs text-purple-400 font-semibold">LIVE</span>
           </span>
         </div>
-        <span className="text-2xs text-dark-500">Updated {formatTime(lastUpdate.toISOString())}</span>
+        {lastUpdate > 0 && <span className="text-2xs text-dark-500">Updated {formatTime(new Date(lastUpdate).toISOString())}</span>}
       </div>
 
       {/* Trending Topics Ticker */}
