@@ -1,4 +1,3 @@
-import { t } from '@/services/i18n';
 import { escapeHtml, sanitizeUrl } from '@/utils/sanitize';
 import { formatTime } from '@/utils';
 import type { NewsItem } from '@/types';
@@ -52,7 +51,6 @@ export class NewsTicker {
   private scrollPosition = 0;
   private isPaused = false;
   private tickerTrack: HTMLElement | null = null;
-  private trackWidth = 0;
   private contentWidth = 0;
   private lastTimestamp = 0;
   private itemCounter = 0;
@@ -260,7 +258,6 @@ export class NewsTicker {
     // Calculate widths for scroll loop
     requestAnimationFrame(() => {
       this.contentWidth = this.tickerTrack!.scrollWidth / 2;
-      this.trackWidth = this.tickerTrack!.scrollWidth;
     });
   }
 
