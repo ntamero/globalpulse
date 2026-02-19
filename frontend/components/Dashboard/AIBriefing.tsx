@@ -49,7 +49,28 @@ export default function AIBriefing() {
         const res = await fetch('/api/briefing');
         if (res.ok) {
           const data = await res.json();
-          setBriefing(data);
+          // Normalize backend response to match Briefing interface
+          const normalized: Briefing = {
+            id: data.id || 'live-briefing',
+            title: data.title || (data.period === 'hourly' ? 'Hourly' : 'Daily') + ' Briefing',
+            type: data.type || (new Date().getHours() < 12 ? 'morning' : 'evening'),
+            date: data.generated_at || data.date || new Date().toISOString(),
+            summary: data.summary || data.content || '',
+            key_developments: Array.isArray(data.key_developments) ? data.key_developments : [],
+            watch_items: Array.isArray(data.watch_items)
+              ? data.watch_items
+              : Array.isArray(data.things_to_watch)
+              ? data.things_to_watch.map((w: any) => ({
+                  title: w.title || '',
+                  description: w.description || '',
+                  likelihood: w.likelihood || 'medium',
+                  impact: w.impact || 'medium',
+                  category: w.category || 'general',
+                }))
+              : [],
+            generated_at: data.generated_at || new Date().toISOString(),
+          };
+          setBriefing(normalized);
           return;
         }
       } catch {
@@ -141,6 +162,7 @@ export default function AIBriefing() {
           )}
 
           {/* Things to Watch */}
+          {Array.isArray(briefing.watch_items) && briefing.watch_items.length > 0 && (
           <div>
             <div className="flex items-center gap-1.5 mb-3">
               <Eye size={13} className="text-yellow-400" />
@@ -185,6 +207,7 @@ export default function AIBriefing() {
               ))}
             </div>
           </div>
+          )}
         </div>
       )}
     </div>
