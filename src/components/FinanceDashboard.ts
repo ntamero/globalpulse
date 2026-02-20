@@ -90,6 +90,17 @@ function embedTVWidget(
   container.appendChild(widgetContainer);
 }
 
+/**
+ * Create a fullscreen expand button HTML
+ */
+function fullscreenBtn(sectionId: string): string {
+  return `<button class="fd-expand-btn" data-expand="${sectionId}" title="Tam Ekran">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zM.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5z"/>
+    </svg>
+  </button>`;
+}
+
 // ─── Main Dashboard Class ───────────────────────────────────
 
 export class FinanceDashboard {
@@ -109,6 +120,8 @@ export class FinanceDashboard {
       this.container.classList.remove('finance-dashboard-host');
       this.container.innerHTML = '';
     }
+    // Remove any active fullscreen overlay
+    document.querySelector('.fd-fullscreen-overlay')?.remove();
   }
 
   private render(): void {
@@ -168,10 +181,11 @@ export class FinanceDashboard {
             </div>
             <div class="fd-widget-container" style="height:550px;" id="fdTechnicalAnalysis"></div>
           </div>
-          <div class="fd-section">
+          <div class="fd-section" id="fdForexSection">
             <div class="fd-section-header">
               <span class="fd-section-icon">💱</span>
               <span class="fd-section-title">Forex Cross Rates</span>
+              ${fullscreenBtn('forex')}
             </div>
             <div class="fd-widget-container" style="height:550px;" id="fdForexCrossRates"></div>
           </div>
@@ -179,12 +193,13 @@ export class FinanceDashboard {
 
         <!-- Row 3: Advanced Chart (full width) -->
         <div class="fd-grid fd-grid-1">
-          <div class="fd-section">
+          <div class="fd-section" id="fdAdvChartSection">
             <div class="fd-section-header">
               <span class="fd-section-icon">🕯️</span>
               <span class="fd-section-title">Advanced Chart</span>
+              ${fullscreenBtn('advChart')}
             </div>
-            <div class="fd-widget-container" style="height:700px;">
+            <div class="fd-widget-container" style="height:2800px;">
               <iframe id="fd-adv" src="${advChartUrl}" style="width:100%;height:100%;border:none;display:block;" allowtransparency="true"></iframe>
             </div>
           </div>
@@ -210,12 +225,13 @@ export class FinanceDashboard {
 
         <!-- Row 5: Stock Heatmap (full width) -->
         <div class="fd-grid fd-grid-1">
-          <div class="fd-section">
+          <div class="fd-section" id="fdHeatmapSection">
             <div class="fd-section-header">
               <span class="fd-section-icon">🗺️</span>
               <span class="fd-section-title">Stock Heatmap</span>
+              ${fullscreenBtn('heatmap')}
             </div>
-            <div class="fd-widget-container" style="height:850px;" id="fdStockHeatmap"></div>
+            <div class="fd-widget-container" style="height:2400px;" id="fdStockHeatmap"></div>
           </div>
         </div>
 
@@ -226,14 +242,14 @@ export class FinanceDashboard {
               <span class="fd-section-icon">🔥</span>
               <span class="fd-section-title">Hotlists</span>
             </div>
-            <div class="fd-widget-container" style="height:460px;" id="fdHotlists"></div>
+            <div class="fd-widget-container" style="height:1380px;" id="fdHotlists"></div>
           </div>
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">📰</span>
               <span class="fd-section-title">Top Stories</span>
             </div>
-            <div class="fd-widget-container" style="height:460px;" id="fdTopStories"></div>
+            <div class="fd-widget-container" style="height:1380px;" id="fdTopStories"></div>
           </div>
         </div>
       </div>
@@ -242,6 +258,7 @@ export class FinanceDashboard {
     // Now inject TradingView widgets programmatically
     this.initWidgets();
     this.attachEventListeners();
+    this.attachFullscreenListeners();
   }
 
   /**
@@ -252,10 +269,9 @@ export class FinanceDashboard {
     const theme = getColorTheme();
     const locale = getLocale();
 
-    // 1. Ticker Tape
+    // 1. Ticker Tape — use container_id for proper rendering
     const tickerTape = document.getElementById('fdTickerTape');
     if (tickerTape) {
-      // Ticker tape needs special handling — fixed height container
       tickerTape.style.height = '46px';
       tickerTape.style.overflow = 'hidden';
       embedTVWidget(tickerTape, 'embed-widget-ticker-tape.js', {
@@ -434,5 +450,87 @@ export class FinanceDashboard {
         }
       });
     });
+  }
+
+  /**
+   * Fullscreen overlay: clones the widget section into a fixed overlay
+   * that covers the page. Pressing ESC or the close button returns to normal.
+   */
+  private attachFullscreenListeners(): void {
+    if (!this.container) return;
+    const theme = getColorTheme();
+    const locale = getLocale();
+
+    this.container.querySelectorAll<HTMLButtonElement>('.fd-expand-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.expand;
+        if (!target) return;
+
+        // Create fullscreen overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'fd-fullscreen-overlay';
+        overlay.innerHTML = `
+          <div class="fd-fullscreen-header">
+            <span class="fd-fullscreen-title">${this.getFullscreenTitle(target)}</span>
+            <button class="fd-fullscreen-close" title="Kapat (ESC)">&times;</button>
+          </div>
+          <div class="fd-fullscreen-body" id="fdFullscreenBody"></div>
+        `;
+
+        document.body.appendChild(overlay);
+        // Prevent body scroll
+        document.body.style.overflow = 'hidden';
+
+        const body = document.getElementById('fdFullscreenBody')!;
+
+        // Inject fresh TradingView widget into fullscreen
+        if (target === 'forex') {
+          embedTVWidget(body, 'embed-widget-forex-cross-rates.js', {
+            width: '100%', height: '100%',
+            currencies: ['EUR', 'USD', 'JPY', 'GBP', 'CHF', 'AUD', 'CAD', 'TRY'],
+            isTransparent: false, colorTheme: theme, locale,
+          });
+        } else if (target === 'advChart') {
+          const fsChartUrl = `https://s.tradingview.com/widgetembed/?frameElementId=fd-adv-fs&symbol=BITSTAMP%3ABTCUSD&interval=D&symboledit=1&saveimage=1&toolbarbg=${theme === 'dark' ? '1e1e1e' : 'f1f3f6'}&studies=MASimple%40tv-basicstudies%1FRSI%40tv-basicstudies&theme=${theme === 'dark' ? 'Dark' : 'Light'}&style=1&timezone=Etc%2FUTC&locale=${locale}&utm_source=globalpulse&utm_medium=widget&utm_campaign=chart`;
+          body.innerHTML = `<iframe id="fd-adv-fs" src="${fsChartUrl}" style="width:100%;height:100%;border:none;display:block;" allowtransparency="true"></iframe>`;
+        } else if (target === 'heatmap') {
+          embedTVWidget(body, 'embed-widget-stock-heatmap.js', {
+            exchanges: [] as string[], dataSource: 'SPX500', grouping: 'sector',
+            blockSize: 'market_cap_basic', blockColor: 'change', locale,
+            symbolUrl: '', colorTheme: theme, hasTopBar: true,
+            isZoomEnabled: true, hasSymbolTooltip: true,
+            isMonoSize: false, width: '100%', height: '100%',
+          });
+        }
+
+        // Close handlers
+        const closeOverlay = () => {
+          overlay.remove();
+          document.body.style.overflow = '';
+        };
+
+        overlay.querySelector('.fd-fullscreen-close')!.addEventListener('click', closeOverlay);
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) closeOverlay();
+        });
+
+        const escHandler = (e: KeyboardEvent) => {
+          if (e.key === 'Escape') {
+            closeOverlay();
+            document.removeEventListener('keydown', escHandler);
+          }
+        };
+        document.addEventListener('keydown', escHandler);
+      });
+    });
+  }
+
+  private getFullscreenTitle(target: string): string {
+    switch (target) {
+      case 'forex': return '💱 Forex Cross Rates';
+      case 'advChart': return '🕯️ Advanced Chart';
+      case 'heatmap': return '🗺️ Stock Heatmap';
+      default: return '';
+    }
   }
 }
