@@ -172,26 +172,30 @@ export class FinanceDashboard {
           </div>
         </div>
 
-        <!-- Row 2: Technical Analysis + Forex Cross Rates -->
-        <div class="fd-grid fd-grid-2">
+        <!-- Technical Analysis (full width) -->
+        <div class="fd-grid fd-grid-1">
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">📈</span>
               <span class="fd-section-title">Technical Analysis</span>
             </div>
-            <div class="fd-widget-container" style="height:550px;" id="fdTechnicalAnalysis"></div>
+            <div class="fd-widget-container" style="height:500px;" id="fdTechnicalAnalysis"></div>
           </div>
+        </div>
+
+        <!-- Forex Cross Rates (full width) -->
+        <div class="fd-grid fd-grid-1">
           <div class="fd-section" id="fdForexSection">
             <div class="fd-section-header">
               <span class="fd-section-icon">💱</span>
               <span class="fd-section-title">Forex Cross Rates</span>
               ${fullscreenBtn('forex')}
             </div>
-            <div class="fd-widget-container" style="height:550px;" id="fdForexCrossRates"></div>
+            <div class="fd-widget-container" style="height:500px;" id="fdForexCrossRates"></div>
           </div>
         </div>
 
-        <!-- Row 3: Advanced Chart (full width) -->
+        <!-- Advanced Chart (full width) -->
         <div class="fd-grid fd-grid-1">
           <div class="fd-section" id="fdAdvChartSection">
             <div class="fd-section-header">
@@ -199,31 +203,35 @@ export class FinanceDashboard {
               <span class="fd-section-title">Advanced Chart</span>
               ${fullscreenBtn('advChart')}
             </div>
-            <div class="fd-widget-container" style="height:2800px;">
+            <div class="fd-widget-container" style="height:800px;">
               <iframe id="fd-adv" src="${advChartUrl}" style="width:100%;height:100%;border:none;display:block;" allowtransparency="true"></iframe>
             </div>
           </div>
         </div>
 
-        <!-- Row 4: Crypto Market + Economic Calendar -->
-        <div class="fd-grid fd-grid-2">
+        <!-- Cryptocurrency Market (full width) -->
+        <div class="fd-grid fd-grid-1">
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">₿</span>
               <span class="fd-section-title">Cryptocurrency Market</span>
             </div>
-            <div class="fd-widget-container" style="height:750px;" id="fdCryptoMarket"></div>
+            <div class="fd-widget-container" style="height:600px;" id="fdCryptoMarket"></div>
           </div>
+        </div>
+
+        <!-- Economic Calendar (full width) -->
+        <div class="fd-grid fd-grid-1">
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">📅</span>
               <span class="fd-section-title">Economic Calendar</span>
             </div>
-            <div class="fd-widget-container" style="height:750px;" id="fdEconomicCalendar"></div>
+            <div class="fd-widget-container" style="height:600px;" id="fdEconomicCalendar"></div>
           </div>
         </div>
 
-        <!-- Row 5: Stock Heatmap (full width) -->
+        <!-- Stock Heatmap (full width) -->
         <div class="fd-grid fd-grid-1">
           <div class="fd-section" id="fdHeatmapSection">
             <div class="fd-section-header">
@@ -231,25 +239,29 @@ export class FinanceDashboard {
               <span class="fd-section-title">Stock Heatmap</span>
               ${fullscreenBtn('heatmap')}
             </div>
-            <div class="fd-widget-container" style="height:2400px;" id="fdStockHeatmap"></div>
+            <div class="fd-widget-container" style="height:800px;" id="fdStockHeatmap"></div>
           </div>
         </div>
 
-        <!-- Row 6: Hotlists + Top Stories -->
-        <div class="fd-grid fd-grid-2">
+        <!-- Hotlists (full width) -->
+        <div class="fd-grid fd-grid-1">
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">🔥</span>
               <span class="fd-section-title">Hotlists</span>
             </div>
-            <div class="fd-widget-container" style="height:1380px;" id="fdHotlists"></div>
+            <div class="fd-widget-container" style="height:600px;" id="fdHotlists"></div>
           </div>
+        </div>
+
+        <!-- Top Stories (full width) -->
+        <div class="fd-grid fd-grid-1">
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">📰</span>
               <span class="fd-section-title">Top Stories</span>
             </div>
-            <div class="fd-widget-container" style="height:1380px;" id="fdTopStories"></div>
+            <div class="fd-widget-container" style="height:600px;" id="fdTopStories"></div>
           </div>
         </div>
       </div>
