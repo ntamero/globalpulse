@@ -39,6 +39,7 @@ import { reverseGeocode } from '@/utils/reverse-geocode';
 import { CountryBriefPage } from '@/components/CountryBriefPage';
 import { maybeShowDownloadBanner } from '@/components/DownloadBanner';
 import { mountGlobalChat, GlobalChat } from '@/components/GlobalChat';
+import { FinanceDashboard } from '@/components/FinanceDashboard';
 import { CountryTimeline, type TimelineEvent } from '@/components/CountryTimeline';
 import { escapeHtml } from '@/utils/sanitize';
 import type { ParsedMapUrlState } from '@/utils';
@@ -161,6 +162,7 @@ export class App {
   private searchModal: SearchModal | null = null;
   private newsTicker: NewsTicker | null = null;
   private globalChat: GlobalChat | null = null;
+  private financeDashboard: FinanceDashboard | null = null;
   private mobileWarningModal: MobileWarningModal | null = null;
   private pizzintIndicator: PizzIntIndicator | null = null;
   private latestPredictions: PredictionMarket[] = [];
@@ -1795,28 +1797,25 @@ export class App {
       <div class="header">
         <div class="header-left">
           <div class="variant-switcher">
-            <a href="${this.isDesktopApp ? '#' : (SITE_VARIANT === 'full' ? '#' : 'http://46.62.167.252')}"
+            <a href="#"
                class="variant-option ${SITE_VARIANT === 'full' ? 'active' : ''}"
                data-variant="full"
-               ${!this.isDesktopApp && SITE_VARIANT !== 'full' ? 'target="_blank" rel="noopener"' : ''}
                title="${t('header.world')}${SITE_VARIANT === 'full' ? ` ${t('common.currentVariant')}` : ''}">
               <span class="variant-icon">🌍</span>
               <span class="variant-label">${t('header.world')}</span>
             </a>
             <span class="variant-divider"></span>
-            <a href="${this.isDesktopApp ? '#' : (SITE_VARIANT === 'tech' ? '#' : 'http://46.62.167.252')}"
+            <a href="#"
                class="variant-option ${SITE_VARIANT === 'tech' ? 'active' : ''}"
                data-variant="tech"
-               ${!this.isDesktopApp && SITE_VARIANT !== 'tech' ? 'target="_blank" rel="noopener"' : ''}
                title="${t('header.tech')}${SITE_VARIANT === 'tech' ? ` ${t('common.currentVariant')}` : ''}">
               <span class="variant-icon">💻</span>
               <span class="variant-label">${t('header.tech')}</span>
             </a>
             <span class="variant-divider"></span>
-            <a href="${this.isDesktopApp ? '#' : (SITE_VARIANT === 'finance' ? '#' : 'http://46.62.167.252')}"
+            <a href="#"
                class="variant-option ${SITE_VARIANT === 'finance' ? 'active' : ''}"
                data-variant="finance"
-               ${!this.isDesktopApp && SITE_VARIANT !== 'finance' ? 'target="_blank" rel="noopener"' : ''}
                title="${t('header.finance')}${SITE_VARIANT === 'finance' ? ` ${t('common.currentVariant')}` : ''}">
               <span class="variant-icon">📈</span>
               <span class="variant-label">${t('header.finance')}</span>
@@ -2038,6 +2037,9 @@ export class App {
       this.boundIdleResetHandler = null;
     }
 
+    // Clean up finance dashboard if active
+    this.financeDashboard?.destroy();
+
     // Clean up map and AIS
     this.map?.destroy();
     disconnectAisStream();
@@ -2061,6 +2063,18 @@ export class App {
     // Initialize escalation service with data getters
     this.map.initEscalationGetters();
     this.currentTimeRange = this.map.getTimeRange();
+
+    // ── Finance Dashboard Mode ──
+    // When finance variant is active, replace standard panel grid with FinanceDashboard
+    if (SITE_VARIANT === 'finance') {
+      // Hide map section for finance dashboard
+      const mapSection = document.getElementById('mapSection');
+      if (mapSection) mapSection.style.display = 'none';
+
+      this.financeDashboard = new FinanceDashboard();
+      this.financeDashboard.mount(panelsGrid);
+      return; // Skip standard panel creation
+    }
 
     // Create all panels
     const politicsPanel = new NewsPanel('politics', t('panels.politics'));
@@ -2628,19 +2642,18 @@ export class App {
     // Sources modal
     this.setupSourcesModal();
 
-    // Variant switcher: switch variant locally on desktop (reload with new config)
-    if (this.isDesktopApp) {
-      this.container.querySelectorAll<HTMLAnchorElement>('.variant-option').forEach(link => {
-        link.addEventListener('click', (e) => {
-          const variant = link.dataset.variant;
-          if (variant && variant !== SITE_VARIANT) {
-            e.preventDefault();
-            localStorage.setItem('globalpulse-variant', variant);
-            window.location.reload();
-          }
-        });
+    // Variant switcher: switch variant locally (reload with new config)
+    // Works in both desktop app and web mode
+    this.container.querySelectorAll<HTMLAnchorElement>('.variant-option').forEach(link => {
+      link.addEventListener('click', (e) => {
+        const variant = link.dataset.variant;
+        if (variant && variant !== SITE_VARIANT) {
+          e.preventDefault();
+          localStorage.setItem('globalpulse-variant', variant);
+          window.location.reload();
+        }
       });
-    }
+    });
 
     // Fullscreen toggle
     const fullscreenBtn = document.getElementById('fullscreenBtn');
