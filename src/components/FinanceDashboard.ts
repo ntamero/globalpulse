@@ -160,14 +160,15 @@ export class FinanceDashboard {
           </div>
         </div>
 
-        <!-- Row 2: Technical Analysis + Social Hub (side by side) -->
+        <!-- Row 2: Forex Heatmap + Social Hub (side by side) -->
         <div class="fd-grid fd-grid-2">
-          <div class="fd-section">
+          <div class="fd-section" id="fdForexHeatmapSection">
             <div class="fd-section-header">
-              <span class="fd-section-icon">📈</span>
-              <span class="fd-section-title">Technical Analysis</span>
+              <span class="fd-section-icon">🌡️</span>
+              <span class="fd-section-title">Forex Heat Map</span>
+              ${fullscreenBtn('forexHeatmap')}
             </div>
-            <div class="fd-widget-container" style="height:1200px;" id="fdTechnicalAnalysis"></div>
+            <div class="fd-widget-container" style="height:1200px;" id="fdForexHeatmap"></div>
           </div>
           <div class="fd-section">
             <div class="fd-section-header">
@@ -373,13 +374,13 @@ export class FinanceDashboard {
       });
     }
 
-    // 3. Technical Analysis
-    const techAnalysis = document.getElementById('fdTechnicalAnalysis');
-    if (techAnalysis) {
-      embedTVWidget(techAnalysis, 'embed-widget-technical-analysis.js', {
-        interval: '1D', width: '100%', height: '100%', isTransparent: false,
-        symbol: 'FOREXCOM:SPXUSD', showIntervalTabs: true,
-        displayMode: 'single', locale, colorTheme: theme,
+    // 3. Forex Heat Map
+    const forexHeatmap = document.getElementById('fdForexHeatmap');
+    if (forexHeatmap) {
+      embedTVWidget(forexHeatmap, 'embed-widget-forex-heat-map.js', {
+        width: '100%', height: '100%',
+        currencies: ['EUR', 'USD', 'JPY', 'GBP', 'CHF', 'AUD', 'CAD', 'NZD', 'CNY', 'TRY', 'SEK', 'NOK'],
+        isTransparent: false, colorTheme: theme, locale,
       });
     }
 
@@ -533,16 +534,32 @@ export class FinanceDashboard {
       }
     }
 
-    // ─── Tab 2: StockTwits Trending ───
+    // ─── Tab 2: StockTwits — use TradingView symbol-specific timeline as fallback ───
     const stocktwitsPanel = document.getElementById('fdSocialStocktwits');
     if (stocktwitsPanel) {
+      // Multiple symbol timelines for social-like experience
       stocktwitsPanel.innerHTML = `
-        <iframe
-          src="https://stocktwits.com/widgets/stream?limit=30&scrollbars=true&streaming=true&title=Trending&style=${isDark ? 'dark' : 'light'}"
-          style="width:100%;height:100%;border:none;"
-          loading="lazy"
-        ></iframe>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;height:100%;padding:4px;">
+          <div id="fdST_BTC" style="height:100%;overflow:hidden;"></div>
+          <div id="fdST_SPX" style="height:100%;overflow:hidden;"></div>
+        </div>
       `;
+      const stBtc = document.getElementById('fdST_BTC');
+      const stSpx = document.getElementById('fdST_SPX');
+      if (stBtc) {
+        embedTVWidget(stBtc, 'embed-widget-timeline.js', {
+          feedMode: 'symbol', symbol: 'BITSTAMP:BTCUSD',
+          isTransparent: false, displayMode: 'regular',
+          width: '100%', height: '100%', colorTheme: theme, locale,
+        });
+      }
+      if (stSpx) {
+        embedTVWidget(stSpx, 'embed-widget-timeline.js', {
+          feedMode: 'symbol', symbol: 'FOREXCOM:SPXUSD',
+          isTransparent: false, displayMode: 'regular',
+          width: '100%', height: '100%', colorTheme: theme, locale,
+        });
+      }
     }
 
     // ─── Tab 3: TradingView Market News ───
@@ -660,7 +677,13 @@ export class FinanceDashboard {
 
         const body = document.getElementById('fdFullscreenBody')!;
 
-        if (target === 'forex') {
+        if (target === 'forexHeatmap') {
+          embedTVWidget(body, 'embed-widget-forex-heat-map.js', {
+            width: '100%', height: '100%',
+            currencies: ['EUR', 'USD', 'JPY', 'GBP', 'CHF', 'AUD', 'CAD', 'NZD', 'CNY', 'TRY', 'SEK', 'NOK', 'MXN', 'ZAR', 'BRL', 'INR'],
+            isTransparent: false, colorTheme: theme, locale,
+          });
+        } else if (target === 'forex') {
           embedTVWidget(body, 'embed-widget-forex-cross-rates.js', {
             width: '100%', height: '100%',
             currencies: ['EUR', 'USD', 'JPY', 'GBP', 'CHF', 'AUD', 'CAD', 'TRY', 'CNY', 'INR', 'BRL', 'MXN'],
@@ -702,6 +725,7 @@ export class FinanceDashboard {
 
   private getFullscreenTitle(target: string): string {
     switch (target) {
+      case 'forexHeatmap': return '🌡️ Forex Heat Map';
       case 'forex': return '💱 Forex Cross Rates';
       case 'advChart': return '🕯️ Advanced Chart';
       case 'heatmap': return '🗺️ Stock Heatmap';
