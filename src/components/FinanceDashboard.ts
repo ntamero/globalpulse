@@ -5,9 +5,10 @@
  * live market data, Finance TV streams, and economic calendar.
  * Replaces the standard panel grid when finance variant is active.
  *
- * TradingView widgets are embedded via innerHTML (static HTML with <script> tags).
- * Dynamic script injection via createElement doesn't work for TV widgets because
- * they read config from script.textContent which only works with inline HTML scripts.
+ * TradingView widgets are embedded using srcdoc iframes — each widget gets
+ * a self-contained HTML document with the standard TradingView embed code.
+ * This is the only reliable way to load TV widgets dynamically because
+ * their scripts read config from script.textContent which requires inline HTML.
  */
 
 import { getCurrentTheme } from '@/utils';
@@ -16,28 +17,21 @@ import { getCurrentTheme } from '@/utils';
 interface FinanceTVChannel {
   id: string;
   name: string;
-  // Use YouTube channel's /live URL for reliable live stream embedding
   embedUrl: string;
   category: 'us' | 'europe' | 'middle-east' | 'asia';
   icon: string;
 }
 
+// Use YouTube channel IDs with live_stream parameter for permanent embeds
 const FINANCE_TV_CHANNELS: FinanceTVChannel[] = [
-  // US — using YouTube channel IDs for permanent live stream embeds
   { id: 'bloomberg', name: 'Bloomberg TV', embedUrl: 'https://www.youtube.com/embed/live_stream?channel=UCIALMKvObZNtJ68-rmLgsfw', category: 'us', icon: '🇺🇸' },
   { id: 'yahoo-finance', name: 'Yahoo Finance', embedUrl: 'https://www.youtube.com/embed/live_stream?channel=UCEAZeUIeJs0IjQiqTCdVSIg', category: 'us', icon: '🇺🇸' },
-
-  // Europe
   { id: 'euronews', name: 'Euronews', embedUrl: 'https://www.youtube.com/embed/live_stream?channel=UCW2QcKZiU8aUGg4yxCIditg', category: 'europe', icon: '🇪🇺' },
   { id: 'dw-news', name: 'DW News', embedUrl: 'https://www.youtube.com/embed/live_stream?channel=UCknLrEdhRCp1aegoMqRaCZg', category: 'europe', icon: '🇩🇪' },
   { id: 'france24-en', name: 'France 24', embedUrl: 'https://www.youtube.com/embed/live_stream?channel=UCQfwfsi5VrQ8yKZ-UWmAEFg', category: 'europe', icon: '🇫🇷' },
   { id: 'sky-news', name: 'Sky News', embedUrl: 'https://www.youtube.com/embed/live_stream?channel=UCoMdktPbSTixAyNGwb-UYkQ', category: 'europe', icon: '🇬🇧' },
-
-  // Middle East
   { id: 'aljazeera', name: 'Al Jazeera English', embedUrl: 'https://www.youtube.com/embed/live_stream?channel=UCNye-wNBqNL5ZzHSJj3l8Bg', category: 'middle-east', icon: '🇶🇦' },
   { id: 'trt-world', name: 'TRT World', embedUrl: 'https://www.youtube.com/embed/live_stream?channel=UC7fWeaHhqgM4Lba7ziMi1pA', category: 'middle-east', icon: '🇹🇷' },
-
-  // Asia
   { id: 'cna', name: 'CNA 24/7', embedUrl: 'https://www.youtube.com/embed/live_stream?channel=UCo8bcnLyZH8tBIH9V1mLgqQ', category: 'asia', icon: '🇸🇬' },
   { id: 'nhk-world', name: 'NHK World', embedUrl: 'https://www.youtube.com/embed/live_stream?channel=UCi2KnMb3eVfzPoXAMPvEwTg', category: 'asia', icon: '🇯🇵' },
 ];
@@ -58,12 +52,17 @@ function getLocale(): string {
 }
 
 /**
- * Build a TradingView widget embed URL for iframe-based embedding.
- * This is the RELIABLE method — works with dynamic DOM unlike script textContent.
+ * Create a srcdoc iframe that contains a self-contained TradingView widget.
+ * This is the ONLY reliable way to dynamically load TV widgets because
+ * their embed scripts read config from inline script.textContent.
  */
-function tvWidgetUrl(widgetType: string, config: Record<string, unknown>): string {
-  const encoded = encodeURIComponent(JSON.stringify(config));
-  return `https://s3.tradingview.com/external-embedding/embed-widget-${widgetType}.html#${encoded}`;
+function tvWidgetIframe(widgetJs: string, config: Record<string, unknown>, height: string = '100%'): string {
+  const theme = getColorTheme();
+  const bgColor = theme === 'dark' ? '#131722' : '#ffffff';
+  const configJson = JSON.stringify(config).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+  // srcdoc must be a complete HTML document — the script reads its own textContent
+  return `<iframe srcdoc='<!DOCTYPE html><html><head><style>body{margin:0;padding:0;overflow:hidden;background:${bgColor}}</style></head><body><div class=&quot;tradingview-widget-container&quot;><div class=&quot;tradingview-widget-container__widget&quot;></div><script type=&quot;text/javascript&quot; src=&quot;https://s3.tradingview.com/external-embedding/${widgetJs}&quot; async>${configJson}</script></div></body></html>' style="width:100%;height:${height};border:none;display:block;" loading="lazy" sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-popups-to-escape-sandbox" allowtransparency="true"></iframe>`;
 }
 
 // ─── Main Dashboard Class ───────────────────────────────────
@@ -92,8 +91,8 @@ export class FinanceDashboard {
     const theme = getColorTheme();
     const locale = getLocale();
 
-    // ── TradingView Widget URLs (iframe-based, reliable) ──
-    const tickerTapeUrl = tvWidgetUrl('ticker-tape', {
+    // ── TradingView Widget Configs ──
+    const tickerTapeConfig = {
       symbols: [
         { proName: 'FOREXCOM:SPXUSD', title: 'S&P 500' },
         { proName: 'FOREXCOM:NSXUSD', title: 'NASDAQ' },
@@ -106,163 +105,93 @@ export class FinanceDashboard {
         { proName: 'BITSTAMP:ETHUSD', title: 'ETH/USD' },
         { proName: 'TVC:GOLD', title: 'Gold' },
         { proName: 'TVC:USOIL', title: 'Oil WTI' },
-        { proName: 'TVC:SILVER', title: 'Silver' },
         { proName: 'FX_IDC:USDTRY', title: 'USD/TRY' },
       ],
-      showSymbolLogo: true,
-      isTransparent: true,
-      displayMode: 'adaptive',
-      colorTheme: theme,
-      locale,
-    });
+      showSymbolLogo: true, isTransparent: false, displayMode: 'adaptive',
+      colorTheme: theme, locale,
+    };
 
-    const marketOverviewUrl = tvWidgetUrl('market-overview', {
-      colorTheme: theme,
-      dateRange: '12M',
-      showChart: true,
-      locale,
-      width: '100%',
-      height: '100%',
-      isTransparent: true,
-      showSymbolLogo: true,
-      showFloatingTooltip: true,
+    const marketOverviewConfig = {
+      colorTheme: theme, dateRange: '12M', showChart: true, locale,
+      width: '100%', height: '100%', isTransparent: false,
+      showSymbolLogo: true, showFloatingTooltip: true,
       tabs: [
-        {
-          title: 'Indices',
-          symbols: [
-            { s: 'FOREXCOM:SPXUSD', d: 'S&P 500' },
-            { s: 'FOREXCOM:NSXUSD', d: 'NASDAQ 100' },
-            { s: 'INDEX:DEU40', d: 'DAX 40' },
-            { s: 'FOREXCOM:UKXGBP', d: 'FTSE 100' },
-            { s: 'INDEX:NKY', d: 'Nikkei 225' },
-            { s: 'INDEX:HSI', d: 'Hang Seng' },
-          ],
-        },
-        {
-          title: 'Forex',
-          symbols: [
-            { s: 'FX_IDC:EURUSD', d: 'EUR/USD' },
-            { s: 'FX_IDC:GBPUSD', d: 'GBP/USD' },
-            { s: 'FX_IDC:USDJPY', d: 'USD/JPY' },
-            { s: 'FX_IDC:USDCHF', d: 'USD/CHF' },
-            { s: 'FX_IDC:AUDUSD', d: 'AUD/USD' },
-            { s: 'FX_IDC:USDTRY', d: 'USD/TRY' },
-          ],
-        },
-        {
-          title: 'Crypto',
-          symbols: [
-            { s: 'BITSTAMP:BTCUSD', d: 'Bitcoin' },
-            { s: 'BITSTAMP:ETHUSD', d: 'Ethereum' },
-            { s: 'BINANCE:SOLUSDT', d: 'Solana' },
-            { s: 'BINANCE:BNBUSDT', d: 'BNB' },
-            { s: 'BINANCE:XRPUSDT', d: 'XRP' },
-            { s: 'BINANCE:ADAUSDT', d: 'Cardano' },
-          ],
-        },
-        {
-          title: 'Commodities',
-          symbols: [
-            { s: 'TVC:GOLD', d: 'Gold' },
-            { s: 'TVC:SILVER', d: 'Silver' },
-            { s: 'TVC:USOIL', d: 'Crude Oil WTI' },
-            { s: 'TVC:UKOIL', d: 'Brent Oil' },
-            { s: 'TVC:PLATINUM', d: 'Platinum' },
-            { s: 'NYMEX:NG1!', d: 'Natural Gas' },
-          ],
-        },
+        { title: 'Indices', symbols: [
+          { s: 'FOREXCOM:SPXUSD', d: 'S&P 500' }, { s: 'FOREXCOM:NSXUSD', d: 'NASDAQ 100' },
+          { s: 'INDEX:DEU40', d: 'DAX 40' }, { s: 'FOREXCOM:UKXGBP', d: 'FTSE 100' },
+          { s: 'INDEX:NKY', d: 'Nikkei 225' }, { s: 'INDEX:HSI', d: 'Hang Seng' },
+        ]},
+        { title: 'Forex', symbols: [
+          { s: 'FX_IDC:EURUSD', d: 'EUR/USD' }, { s: 'FX_IDC:GBPUSD', d: 'GBP/USD' },
+          { s: 'FX_IDC:USDJPY', d: 'USD/JPY' }, { s: 'FX_IDC:USDCHF', d: 'USD/CHF' },
+          { s: 'FX_IDC:AUDUSD', d: 'AUD/USD' }, { s: 'FX_IDC:USDTRY', d: 'USD/TRY' },
+        ]},
+        { title: 'Crypto', symbols: [
+          { s: 'BITSTAMP:BTCUSD', d: 'Bitcoin' }, { s: 'BITSTAMP:ETHUSD', d: 'Ethereum' },
+          { s: 'BINANCE:SOLUSDT', d: 'Solana' }, { s: 'BINANCE:BNBUSDT', d: 'BNB' },
+          { s: 'BINANCE:XRPUSDT', d: 'XRP' }, { s: 'BINANCE:ADAUSDT', d: 'Cardano' },
+        ]},
+        { title: 'Commodities', symbols: [
+          { s: 'TVC:GOLD', d: 'Gold' }, { s: 'TVC:SILVER', d: 'Silver' },
+          { s: 'TVC:USOIL', d: 'Crude Oil WTI' }, { s: 'TVC:UKOIL', d: 'Brent Oil' },
+          { s: 'TVC:PLATINUM', d: 'Platinum' }, { s: 'NYMEX:NG1!', d: 'Natural Gas' },
+        ]},
       ],
-    });
+    };
 
-    const technicalAnalysisUrl = tvWidgetUrl('technical-analysis', {
-      interval: '1D',
-      width: '100%',
-      height: '100%',
-      isTransparent: true,
-      symbol: 'FOREXCOM:SPXUSD',
-      showIntervalTabs: true,
-      displayMode: 'single',
-      locale,
-      colorTheme: theme,
-    });
+    const technicalAnalysisConfig = {
+      interval: '1D', width: '100%', height: '100%', isTransparent: false,
+      symbol: 'FOREXCOM:SPXUSD', showIntervalTabs: true,
+      displayMode: 'single', locale, colorTheme: theme,
+    };
 
-    const forexCrossRatesUrl = tvWidgetUrl('forex-cross-rates', {
-      width: '100%',
-      height: '100%',
+    const forexCrossRatesConfig = {
+      width: '100%', height: '100%',
       currencies: ['EUR', 'USD', 'JPY', 'GBP', 'CHF', 'AUD', 'CAD', 'TRY'],
-      isTransparent: true,
-      colorTheme: theme,
-      locale,
-    });
+      isTransparent: false, colorTheme: theme, locale,
+    };
 
-    const cryptoMarketUrl = tvWidgetUrl('screener', {
-      width: '100%',
-      height: '100%',
-      defaultColumn: 'overview',
-      screener_type: 'crypto_mkt',
-      displayCurrency: 'USD',
-      colorTheme: theme,
-      locale,
-      isTransparent: true,
-    });
+    const cryptoMarketConfig = {
+      width: '100%', height: '100%', defaultColumn: 'overview',
+      screener_type: 'crypto_mkt', displayCurrency: 'USD',
+      colorTheme: theme, locale, isTransparent: false,
+    };
 
-    const economicCalendarUrl = tvWidgetUrl('events', {
-      colorTheme: theme,
-      isTransparent: true,
-      width: '100%',
-      height: '100%',
-      locale,
+    const economicCalendarConfig = {
+      colorTheme: theme, isTransparent: false,
+      width: '100%', height: '100%', locale,
       importanceFilter: '-1,0,1',
       countryFilter: 'us,eu,gb,de,jp,cn,tr',
-    });
+    };
 
-    const stockHeatmapUrl = tvWidgetUrl('stock-heatmap', {
-      exchanges: [],
-      dataSource: 'SPX500',
-      grouping: 'sector',
-      blockSize: 'market_cap_basic',
-      blockColor: 'change',
-      locale,
-      symbolUrl: '',
-      colorTheme: theme,
-      hasTopBar: true,
-      isZoomEnabled: true,
-      hasSymbolTooltip: true,
-      isMonoSize: false,
-      width: '100%',
-      height: '100%',
-    });
+    const stockHeatmapConfig = {
+      exchanges: [] as string[], dataSource: 'SPX500', grouping: 'sector',
+      blockSize: 'market_cap_basic', blockColor: 'change', locale,
+      symbolUrl: '', colorTheme: theme, hasTopBar: true,
+      isZoomEnabled: true, hasSymbolTooltip: true,
+      isMonoSize: false, width: '100%', height: '100%',
+    };
 
-    const hotlistsUrl = tvWidgetUrl('hotlists', {
-      colorTheme: theme,
-      dateRange: '12M',
-      exchange: 'US',
-      showChart: true,
-      locale,
-      width: '100%',
-      height: '100%',
-      isTransparent: true,
-      showSymbolLogo: true,
-    });
+    const hotlistsConfig = {
+      colorTheme: theme, dateRange: '12M', exchange: 'US',
+      showChart: true, locale, width: '100%', height: '100%',
+      isTransparent: false, showSymbolLogo: true,
+    };
 
-    const topStoriesUrl = tvWidgetUrl('timeline', {
-      feedMode: 'all_symbols',
-      isTransparent: true,
-      displayMode: 'regular',
-      width: '100%',
-      height: '100%',
-      colorTheme: theme,
-      locale,
-    });
+    const topStoriesConfig = {
+      feedMode: 'all_symbols', isTransparent: false,
+      displayMode: 'regular', width: '100%', height: '100%',
+      colorTheme: theme, locale,
+    };
 
-    // Advanced chart uses different approach — TradingView.widget() constructor
-    const advancedChartUrl = `https://s3.tradingview.com/widgetembed/?frameElementId=fd-adv-chart&symbol=BITSTAMP:BTCUSD&interval=D&symboledit=1&saveimage=1&toolbarbg=${theme === 'dark' ? '1e1e1e' : 'f1f3f6'}&studies=MASimple%40tv-basicstudies&theme=${theme === 'dark' ? 'dark' : 'light'}&style=1&timezone=Etc%2FUTC&studies_overrides=%7B%7D&overrides=%7B%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&locale=${locale}&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=BITSTAMP:BTCUSD`;
+    // Advanced chart via widgetembed URL (different from embed widgets)
+    const advChartUrl = `https://s3.tradingview.com/widgetembed/?frameElementId=fd-adv&symbol=BITSTAMP%3ABTCUSD&interval=D&symboledit=1&saveimage=1&toolbarbg=${theme === 'dark' ? '1e1e1e' : 'f1f3f6'}&studies=MASimple%40tv-basicstudies%1FRSI%40tv-basicstudies&theme=${theme === 'dark' ? 'Dark' : 'Light'}&style=1&timezone=Etc%2FUTC&locale=${locale}&utm_source=globalpulse&utm_medium=widget&utm_campaign=chart`;
 
     this.container.innerHTML = `
       <div class="finance-dashboard">
         <!-- Ticker Tape -->
         <div class="fd-ticker-tape">
-          <iframe src="${tickerTapeUrl}" style="width:100%;height:46px;border:none;" loading="lazy"></iframe>
+          ${tvWidgetIframe('embed-widget-ticker-tape.js', tickerTapeConfig, '46px')}
         </div>
 
         <!-- Row 1: Market Overview + Finance TV -->
@@ -273,7 +202,7 @@ export class FinanceDashboard {
               <span class="fd-section-title">Market Overview</span>
             </div>
             <div class="fd-widget-container" style="height:460px;">
-              <iframe src="${marketOverviewUrl}" style="width:100%;height:100%;border:none;" loading="lazy"></iframe>
+              ${tvWidgetIframe('embed-widget-market-overview.js', marketOverviewConfig)}
             </div>
           </div>
           <div class="fd-section fd-tv-section">
@@ -291,7 +220,7 @@ export class FinanceDashboard {
             <div class="fd-tv-player" id="fdTVPlayer">
               <iframe
                 id="fdTVIframe"
-                src="${this.activeChannel.embedUrl}?autoplay=0&mute=1&rel=0"
+                src="${this.activeChannel.embedUrl}&autoplay=0&mute=1&rel=0"
                 frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowfullscreen
@@ -311,7 +240,7 @@ export class FinanceDashboard {
               <span class="fd-section-title">Technical Analysis</span>
             </div>
             <div class="fd-widget-container" style="height:420px;">
-              <iframe src="${technicalAnalysisUrl}" style="width:100%;height:100%;border:none;" loading="lazy"></iframe>
+              ${tvWidgetIframe('embed-widget-technical-analysis.js', technicalAnalysisConfig)}
             </div>
           </div>
           <div class="fd-section">
@@ -320,7 +249,7 @@ export class FinanceDashboard {
               <span class="fd-section-title">Forex Cross Rates</span>
             </div>
             <div class="fd-widget-container" style="height:420px;">
-              <iframe src="${forexCrossRatesUrl}" style="width:100%;height:100%;border:none;" loading="lazy"></iframe>
+              ${tvWidgetIframe('embed-widget-forex-cross-rates.js', forexCrossRatesConfig)}
             </div>
           </div>
         </div>
@@ -333,7 +262,7 @@ export class FinanceDashboard {
               <span class="fd-section-title">Advanced Chart</span>
             </div>
             <div class="fd-widget-container" style="height:500px;">
-              <iframe id="fd-adv-chart" src="${advancedChartUrl}" style="width:100%;height:100%;border:none;" loading="lazy" allowtransparency="true"></iframe>
+              <iframe id="fd-adv" src="${advChartUrl}" style="width:100%;height:100%;border:none;display:block;" allowtransparency="true" loading="lazy"></iframe>
             </div>
           </div>
         </div>
@@ -346,7 +275,7 @@ export class FinanceDashboard {
               <span class="fd-section-title">Cryptocurrency Market</span>
             </div>
             <div class="fd-widget-container" style="height:460px;">
-              <iframe src="${cryptoMarketUrl}" style="width:100%;height:100%;border:none;" loading="lazy"></iframe>
+              ${tvWidgetIframe('embed-widget-screener.js', cryptoMarketConfig)}
             </div>
           </div>
           <div class="fd-section">
@@ -355,7 +284,7 @@ export class FinanceDashboard {
               <span class="fd-section-title">Economic Calendar</span>
             </div>
             <div class="fd-widget-container" style="height:460px;">
-              <iframe src="${economicCalendarUrl}" style="width:100%;height:100%;border:none;" loading="lazy"></iframe>
+              ${tvWidgetIframe('embed-widget-events.js', economicCalendarConfig)}
             </div>
           </div>
         </div>
@@ -368,7 +297,7 @@ export class FinanceDashboard {
               <span class="fd-section-title">Stock Heatmap</span>
             </div>
             <div class="fd-widget-container" style="height:480px;">
-              <iframe src="${stockHeatmapUrl}" style="width:100%;height:100%;border:none;" loading="lazy"></iframe>
+              ${tvWidgetIframe('embed-widget-stock-heatmap.js', stockHeatmapConfig)}
             </div>
           </div>
         </div>
@@ -381,7 +310,7 @@ export class FinanceDashboard {
               <span class="fd-section-title">Hotlists</span>
             </div>
             <div class="fd-widget-container" style="height:460px;">
-              <iframe src="${hotlistsUrl}" style="width:100%;height:100%;border:none;" loading="lazy"></iframe>
+              ${tvWidgetIframe('embed-widget-hotlists.js', hotlistsConfig)}
             </div>
           </div>
           <div class="fd-section">
@@ -390,7 +319,7 @@ export class FinanceDashboard {
               <span class="fd-section-title">Top Stories</span>
             </div>
             <div class="fd-widget-container" style="height:460px;">
-              <iframe src="${topStoriesUrl}" style="width:100%;height:100%;border:none;" loading="lazy"></iframe>
+              ${tvWidgetIframe('embed-widget-timeline.js', topStoriesConfig)}
             </div>
           </div>
         </div>
@@ -418,7 +347,6 @@ export class FinanceDashboard {
   private attachEventListeners(): void {
     if (!this.container) return;
 
-    // TV category filter
     this.container.querySelectorAll<HTMLButtonElement>('.fd-tv-cat').forEach(btn => {
       btn.addEventListener('click', () => {
         this.activeCategory = btn.dataset.cat as TVCategory;
@@ -443,7 +371,7 @@ export class FinanceDashboard {
           this.activeChannel = channel;
           const iframe = this.container!.querySelector('#fdTVIframe') as HTMLIFrameElement;
           if (iframe) {
-            iframe.src = `${channel.embedUrl}?autoplay=1&mute=0&rel=0`;
+            iframe.src = `${channel.embedUrl}&autoplay=1&mute=0&rel=0`;
           }
           const list = this.container!.querySelector('#fdChannelList');
           if (list) list.innerHTML = this.renderChannelList();
