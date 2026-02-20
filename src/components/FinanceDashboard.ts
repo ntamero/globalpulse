@@ -197,14 +197,14 @@ export class FinanceDashboard {
               <span class="fd-section-icon">₿</span>
               <span class="fd-section-title">Cryptocurrency Market</span>
             </div>
-            <div class="fd-widget-container" style="height:600px;" id="fdCryptoMarket"></div>
+            <div class="fd-widget-container" style="height:750px;" id="fdCryptoMarket"></div>
           </div>
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">📅</span>
               <span class="fd-section-title">Economic Calendar</span>
             </div>
-            <div class="fd-widget-container" style="height:600px;" id="fdEconomicCalendar"></div>
+            <div class="fd-widget-container" style="height:750px;" id="fdEconomicCalendar"></div>
           </div>
         </div>
 
@@ -215,7 +215,7 @@ export class FinanceDashboard {
               <span class="fd-section-icon">🗺️</span>
               <span class="fd-section-title">Stock Heatmap</span>
             </div>
-            <div class="fd-widget-container" style="height:700px;" id="fdStockHeatmap"></div>
+            <div class="fd-widget-container" style="height:850px;" id="fdStockHeatmap"></div>
           </div>
         </div>
 
