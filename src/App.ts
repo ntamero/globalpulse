@@ -3074,6 +3074,9 @@ export class App {
   }
 
   private async loadAllData(): Promise<void> {
+    // Finance variant uses TradingView widgets — no panel data loading needed
+    if (SITE_VARIANT === 'finance') return;
+
     const runGuarded = async (name: string, fn: () => Promise<void>): Promise<void> => {
       if (this.inFlight.has(name)) return;
       this.inFlight.add(name);
@@ -4351,8 +4354,8 @@ export class App {
   }
 
   private updateMonitorResults(): void {
-    const monitorPanel = this.panels['monitors'] as MonitorPanel;
-    monitorPanel.renderResults(this.allNews);
+    const monitorPanel = this.panels['monitors'] as MonitorPanel | undefined;
+    if (monitorPanel) monitorPanel.renderResults(this.allNews);
   }
 
   private async runCorrelationAnalysis(): Promise<void> {
@@ -4497,6 +4500,8 @@ export class App {
   }
 
   private setupRefreshIntervals(): void {
+    // Finance variant uses TradingView widgets — no refresh intervals needed
+    if (SITE_VARIANT === 'finance') return;
     // Always refresh news, markets, predictions, pizzint
     this.scheduleRefresh('news', () => this.loadNews(), REFRESH_INTERVALS.feeds);
     this.scheduleRefresh('markets', () => this.loadMarkets(), REFRESH_INTERVALS.markets);
