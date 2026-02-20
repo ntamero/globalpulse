@@ -160,7 +160,7 @@ export class FinanceDashboard {
           </div>
         </div>
 
-        <!-- Row 2: Technical Analysis + Finance Social Feed (side by side) -->
+        <!-- Row 2: Technical Analysis + Social Hub (side by side) -->
         <div class="fd-grid fd-grid-2">
           <div class="fd-section">
             <div class="fd-section-header">
@@ -172,9 +172,26 @@ export class FinanceDashboard {
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">💬</span>
-              <span class="fd-section-title">Finance Social Feed</span>
+              <span class="fd-section-title">Finance Social Hub</span>
+              <div class="fd-social-tabs" id="fdSocialTabs">
+                <button class="fd-social-tab active" data-stab="tweets">𝕏 Tweets</button>
+                <button class="fd-social-tab" data-stab="stocktwits">StockTwits</button>
+                <button class="fd-social-tab" data-stab="news">Market News</button>
+              </div>
             </div>
-            <div class="fd-widget-container" style="height:1200px;" id="fdFinanceTimeline"></div>
+            <div class="fd-social-panels">
+              <div class="fd-social-panel active" id="fdSocialTweets" style="height:1160px;overflow-y:auto;">
+                <!-- Twitter/X Finance Timelines -->
+                <div class="fd-tweets-grid">
+                  <div class="fd-tweet-col" id="fdTweetCol1"></div>
+                  <div class="fd-tweet-col" id="fdTweetCol2"></div>
+                </div>
+              </div>
+              <div class="fd-social-panel" id="fdSocialStocktwits" style="height:1160px;overflow:hidden;">
+              </div>
+              <div class="fd-social-panel" id="fdSocialNews" style="height:1160px;overflow:hidden;">
+              </div>
+            </div>
           </div>
         </div>
 
@@ -366,16 +383,8 @@ export class FinanceDashboard {
       });
     }
 
-    // 4. Finance Social Feed / Timeline
-    const financeTimeline = document.getElementById('fdFinanceTimeline');
-    if (financeTimeline) {
-      embedTVWidget(financeTimeline, 'embed-widget-timeline.js', {
-        feedMode: 'market', market: 'stock',
-        isTransparent: false, displayMode: 'regular',
-        width: '100%', height: '100%',
-        colorTheme: theme, locale,
-      });
-    }
+    // 4. Finance Social Hub — 3 tabs: Tweets, StockTwits, Market News
+    this.initSocialHub(theme, locale);
 
     // 5. Forex Cross Rates
     const forexRates = document.getElementById('fdForexCrossRates');
@@ -479,6 +488,97 @@ export class FinanceDashboard {
     }
   }
 
+  /**
+   * Initialize the Finance Social Hub with 3 tabs:
+   * 1. Twitter/X Finance Timelines (real tweets)
+   * 2. StockTwits Trending (community sentiment)
+   * 3. TradingView Market News
+   */
+  private initSocialHub(theme: string, locale: string): void {
+    const isDark = theme === 'dark';
+
+    // ─── Tab 1: Twitter/X Finance Timelines ───
+    const tweetCol1 = document.getElementById('fdTweetCol1');
+    const tweetCol2 = document.getElementById('fdTweetCol2');
+    if (tweetCol1 && tweetCol2) {
+      const twitterTheme = isDark ? 'dark' : 'light';
+      // Column 1: @markets (Bloomberg Markets)
+      tweetCol1.innerHTML = `
+        <a class="twitter-timeline"
+           href="https://twitter.com/markets"
+           data-height="1100"
+           data-theme="${twitterTheme}"
+           data-chrome="noheader nofooter noborders transparent"
+           data-dnt="true">Bloomberg Markets</a>
+      `;
+      // Column 2: @business (Bloomberg Business)
+      tweetCol2.innerHTML = `
+        <a class="twitter-timeline"
+           href="https://twitter.com/business"
+           data-height="1100"
+           data-theme="${twitterTheme}"
+           data-chrome="noheader nofooter noborders transparent"
+           data-dnt="true">Bloomberg</a>
+      `;
+      // Load Twitter widgets.js (only once)
+      if (!document.getElementById('twitter-wjs')) {
+        const twScript = document.createElement('script');
+        twScript.id = 'twitter-wjs';
+        twScript.src = 'https://platform.twitter.com/widgets.js';
+        twScript.async = true;
+        document.head.appendChild(twScript);
+      } else if ((window as unknown as Record<string, unknown>).twttr) {
+        // Twitter already loaded — re-render
+        ((window as unknown as Record<string, unknown>).twttr as { widgets: { load: () => void } }).widgets.load();
+      }
+    }
+
+    // ─── Tab 2: StockTwits Trending ───
+    const stocktwitsPanel = document.getElementById('fdSocialStocktwits');
+    if (stocktwitsPanel) {
+      stocktwitsPanel.innerHTML = `
+        <iframe
+          src="https://stocktwits.com/widgets/stream?limit=30&scrollbars=true&streaming=true&title=Trending&style=${isDark ? 'dark' : 'light'}"
+          style="width:100%;height:100%;border:none;"
+          loading="lazy"
+        ></iframe>
+      `;
+    }
+
+    // ─── Tab 3: TradingView Market News ───
+    const newsPanel = document.getElementById('fdSocialNews');
+    if (newsPanel) {
+      embedTVWidget(newsPanel, 'embed-widget-timeline.js', {
+        feedMode: 'market', market: 'stock',
+        isTransparent: false, displayMode: 'regular',
+        width: '100%', height: '100%',
+        colorTheme: theme, locale,
+      });
+    }
+  }
+
+  private attachSocialTabListeners(): void {
+    if (!this.container) return;
+    this.container.querySelectorAll<HTMLButtonElement>('.fd-social-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.stab;
+        if (!tab) return;
+        // Toggle active tab
+        this.container!.querySelectorAll('.fd-social-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        // Toggle active panel
+        this.container!.querySelectorAll('.fd-social-panel').forEach(p => p.classList.remove('active'));
+        const panelMap: Record<string, string> = {
+          tweets: 'fdSocialTweets',
+          stocktwits: 'fdSocialStocktwits',
+          news: 'fdSocialNews',
+        };
+        const targetPanel = document.getElementById(panelMap[tab] || '');
+        if (targetPanel) targetPanel.classList.add('active');
+      });
+    });
+  }
+
   private renderChannelList(): string {
     const channels = this.activeCategory === 'all'
       ? FINANCE_TV_CHANNELS
@@ -497,6 +597,7 @@ export class FinanceDashboard {
   private attachEventListeners(): void {
     if (!this.container) return;
 
+    // TV category tabs
     this.container.querySelectorAll<HTMLButtonElement>('.fd-tv-cat').forEach(btn => {
       btn.addEventListener('click', () => {
         this.activeCategory = btn.dataset.cat as TVCategory;
@@ -509,6 +610,9 @@ export class FinanceDashboard {
     });
 
     this.attachChannelListeners();
+
+    // Social hub tabs
+    this.attachSocialTabListeners();
   }
 
   private attachChannelListeners(): void {
