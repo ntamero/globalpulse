@@ -1,42 +1,40 @@
 /**
  * GlobalPulse — Finance Dashboard
  *
- * OpenStock-style professional trading dashboard with TradingView widgets,
- * live market data, Finance TV streams, and economic calendar.
- * Replaces the standard panel grid when finance variant is active.
+ * OpenStock-style professional trading dashboard — 100% finance-focused.
+ * TradingView widgets for charts, markets, heatmaps, screeners.
+ * Finance TV live streams. Real-time social timeline & news.
+ *
+ * Layout: 2-column grid with tall panels (extended vertically).
  *
  * TradingView widgets are embedded using the official approach:
  *   createElement('script') + script.innerHTML = JSON.stringify(config)
- * This is the method used by all major framework wrapper libraries (React, SolidJS, etc.)
- * because TradingView embed scripts read their config from script element's textContent.
  */
 
 import { getCurrentTheme } from '@/utils';
 
-// ─── Finance TV Channels ────────────────────────────────────
+// ─── Finance TV Channels ─────────────────────────────────────
 interface FinanceTVChannel {
   id: string;
   name: string;
-  videoId: string; // YouTube video ID (semi-permanent for 24/7 streams)
+  videoId: string;
   category: 'us' | 'europe' | 'middle-east' | 'asia';
   icon: string;
 }
 
-// Verified YouTube live stream video IDs as of Feb 2026
-// These are semi-permanent — 24/7 channels keep the same ID for months/years
 const FINANCE_TV_CHANNELS: FinanceTVChannel[] = [
   { id: 'bloomberg', name: 'Bloomberg TV', videoId: 'iEpJwprxDdk', category: 'us', icon: '🇺🇸' },
   { id: 'cnbc', name: 'CNBC', videoId: '9NyxcX3rhQs', category: 'us', icon: '🇺🇸' },
   { id: 'yahoo-finance', name: 'Yahoo Finance', videoId: 'KQp-e_XQnDE', category: 'us', icon: '🇺🇸' },
-  { id: 'sky-news', name: 'Sky News', videoId: 'YDvsBbKfLPA', category: 'europe', icon: '🇬🇧' },
-  { id: 'euronews', name: 'Euronews', videoId: '6aWYMmFsEKA', category: 'europe', icon: '🇪🇺' },
-  { id: 'dw-news', name: 'DW News', videoId: 'LuKwFajn37U', category: 'europe', icon: '🇩🇪' },
-  { id: 'france24-en', name: 'France 24', videoId: 'Ap-UM1O9RBU', category: 'europe', icon: '🇫🇷' },
-  { id: 'aljazeera', name: 'Al Jazeera English', videoId: 'gCNeDWCI0vo', category: 'middle-east', icon: '🇶🇦' },
-  { id: 'alarabiya', name: 'Al Arabiya', videoId: 'n7eQejkXbnM', category: 'middle-east', icon: '🇸🇦' },
-  { id: 'trt-world', name: 'TRT World', videoId: 'ABfFhWzWs0s', category: 'middle-east', icon: '🇹🇷' },
-  { id: 'cna', name: 'CNA 24/7', videoId: 'XWq5kBlakcQ', category: 'asia', icon: '🇸🇬' },
-  { id: 'nhk-world', name: 'NHK World', videoId: 'f0lYkdA-Gtw', category: 'asia', icon: '🇯🇵' },
+  { id: 'sky-news', name: 'Sky News Business', videoId: 'YDvsBbKfLPA', category: 'europe', icon: '🇬🇧' },
+  { id: 'euronews', name: 'Euronews Business', videoId: '6aWYMmFsEKA', category: 'europe', icon: '🇪🇺' },
+  { id: 'dw-news', name: 'DW Business', videoId: 'LuKwFajn37U', category: 'europe', icon: '🇩🇪' },
+  { id: 'france24-en', name: 'France 24 Business', videoId: 'Ap-UM1O9RBU', category: 'europe', icon: '🇫🇷' },
+  { id: 'aljazeera', name: 'Al Jazeera Business', videoId: 'gCNeDWCI0vo', category: 'middle-east', icon: '🇶🇦' },
+  { id: 'alarabiya', name: 'Al Arabiya Business', videoId: 'n7eQejkXbnM', category: 'middle-east', icon: '🇸🇦' },
+  { id: 'trt-world', name: 'TRT World Business', videoId: 'ABfFhWzWs0s', category: 'middle-east', icon: '🇹🇷' },
+  { id: 'cna', name: 'CNA Markets', videoId: 'XWq5kBlakcQ', category: 'asia', icon: '🇸🇬' },
+  { id: 'nhk-world', name: 'NHK World Business', videoId: 'f0lYkdA-Gtw', category: 'asia', icon: '🇯🇵' },
 ];
 
 type TVCategory = 'all' | 'us' | 'europe' | 'middle-east' | 'asia';
@@ -54,20 +52,12 @@ function getLocale(): string {
   return 'en';
 }
 
-/**
- * Embed a TradingView widget into a container element.
- * Uses createElement('script') + innerHTML approach — the battle-tested
- * method used by react-tradingview-embed and solid-tradingview-widgets.
- */
 function embedTVWidget(
   container: HTMLElement,
   widgetJs: string,
   config: Record<string, unknown>,
 ): void {
-  // Clear any previous content
   container.innerHTML = '';
-
-  // Create widget container structure
   const widgetContainer = document.createElement('div');
   widgetContainer.className = 'tradingview-widget-container';
   widgetContainer.style.width = '100%';
@@ -79,7 +69,6 @@ function embedTVWidget(
   widgetDiv.style.height = '100%';
   widgetContainer.appendChild(widgetDiv);
 
-  // Create script element — TV embed reads config from script.innerHTML
   const script = document.createElement('script');
   script.type = 'text/javascript';
   script.src = `https://s3.tradingview.com/external-embedding/${widgetJs}`;
@@ -90,9 +79,6 @@ function embedTVWidget(
   container.appendChild(widgetContainer);
 }
 
-/**
- * Create a fullscreen expand button HTML
- */
 function fullscreenBtn(sectionId: string): string {
   return `<button class="fd-expand-btn" data-expand="${sectionId}" title="Tam Ekran">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -120,17 +106,19 @@ export class FinanceDashboard {
       this.container.classList.remove('finance-dashboard-host');
       this.container.innerHTML = '';
     }
-    // Remove any active fullscreen overlay
     document.querySelector('.fd-fullscreen-overlay')?.remove();
   }
 
   private render(): void {
     if (!this.container) return;
     const theme = getColorTheme();
+    const locale = getLocale();
 
-    // Build the HTML skeleton (without TradingView widgets — those are injected via JS)
-    const advChartUrl = `https://s.tradingview.com/widgetembed/?frameElementId=fd-adv&symbol=BITSTAMP%3ABTCUSD&interval=D&symboledit=1&saveimage=1&toolbarbg=${theme === 'dark' ? '1e1e1e' : 'f1f3f6'}&studies=MASimple%40tv-basicstudies%1FRSI%40tv-basicstudies&theme=${theme === 'dark' ? 'Dark' : 'Light'}&style=1&timezone=Etc%2FUTC&locale=${getLocale()}&utm_source=globalpulse&utm_medium=widget&utm_campaign=chart`;
+    const advChartUrl = `https://s.tradingview.com/widgetembed/?frameElementId=fd-adv&symbol=BITSTAMP%3ABTCUSD&interval=D&symboledit=1&saveimage=1&toolbarbg=${theme === 'dark' ? '1e1e1e' : 'f1f3f6'}&studies=MASimple%40tv-basicstudies%1FRSI%40tv-basicstudies&theme=${theme === 'dark' ? 'Dark' : 'Light'}&style=1&timezone=Etc%2FUTC&locale=${locale}&utm_source=globalpulse&utm_medium=widget&utm_campaign=chart`;
 
+    // ============================================================
+    // LAYOUT: 2-column grid, panels extended vertically (tall)
+    // ============================================================
     this.container.innerHTML = `
       <div class="finance-dashboard">
         <!-- Ticker Tape -->
@@ -143,7 +131,7 @@ export class FinanceDashboard {
               <span class="fd-section-icon">📊</span>
               <span class="fd-section-title">Market Overview</span>
             </div>
-            <div class="fd-widget-container" style="height:460px;" id="fdMarketOverview"></div>
+            <div class="fd-widget-container" style="height:700px;" id="fdMarketOverview"></div>
           </div>
           <div class="fd-section fd-tv-section">
             <div class="fd-section-header">
@@ -172,116 +160,138 @@ export class FinanceDashboard {
           </div>
         </div>
 
-        <!-- Technical Analysis (full width) -->
-        <div class="fd-grid fd-grid-1">
+        <!-- Row 2: Technical Analysis + Finance Social Feed (side by side) -->
+        <div class="fd-grid fd-grid-2">
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">📈</span>
               <span class="fd-section-title">Technical Analysis</span>
             </div>
-            <div class="fd-widget-container" style="height:500px;" id="fdTechnicalAnalysis"></div>
+            <div class="fd-widget-container" style="height:1200px;" id="fdTechnicalAnalysis"></div>
+          </div>
+          <div class="fd-section">
+            <div class="fd-section-header">
+              <span class="fd-section-icon">💬</span>
+              <span class="fd-section-title">Finance Social Feed</span>
+            </div>
+            <div class="fd-widget-container" style="height:1200px;" id="fdFinanceTimeline"></div>
           </div>
         </div>
 
-        <!-- Forex Cross Rates (full width) -->
-        <div class="fd-grid fd-grid-1">
+        <!-- Row 3: Forex Cross Rates + Advanced Chart (side by side) -->
+        <div class="fd-grid fd-grid-2">
           <div class="fd-section" id="fdForexSection">
             <div class="fd-section-header">
               <span class="fd-section-icon">💱</span>
               <span class="fd-section-title">Forex Cross Rates</span>
               ${fullscreenBtn('forex')}
             </div>
-            <div class="fd-widget-container" style="height:500px;" id="fdForexCrossRates"></div>
+            <div class="fd-widget-container" style="height:2500px;" id="fdForexCrossRates"></div>
           </div>
-        </div>
-
-        <!-- Advanced Chart (full width) -->
-        <div class="fd-grid fd-grid-1">
           <div class="fd-section" id="fdAdvChartSection">
             <div class="fd-section-header">
               <span class="fd-section-icon">🕯️</span>
               <span class="fd-section-title">Advanced Chart</span>
               ${fullscreenBtn('advChart')}
             </div>
-            <div class="fd-widget-container" style="height:800px;">
+            <div class="fd-widget-container" style="height:2500px;">
               <iframe id="fd-adv" src="${advChartUrl}" style="width:100%;height:100%;border:none;display:block;" allowtransparency="true"></iframe>
             </div>
           </div>
         </div>
 
-        <!-- Cryptocurrency Market (full width) -->
-        <div class="fd-grid fd-grid-1">
+        <!-- Row 4: Crypto Market + Economic Calendar (side by side) -->
+        <div class="fd-grid fd-grid-2">
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">₿</span>
               <span class="fd-section-title">Cryptocurrency Market</span>
             </div>
-            <div class="fd-widget-container" style="height:600px;" id="fdCryptoMarket"></div>
+            <div class="fd-widget-container" style="height:3000px;" id="fdCryptoMarket"></div>
           </div>
-        </div>
-
-        <!-- Economic Calendar (full width) -->
-        <div class="fd-grid fd-grid-1">
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">📅</span>
               <span class="fd-section-title">Economic Calendar</span>
             </div>
-            <div class="fd-widget-container" style="height:600px;" id="fdEconomicCalendar"></div>
+            <div class="fd-widget-container" style="height:3000px;" id="fdEconomicCalendar"></div>
           </div>
         </div>
 
-        <!-- Stock Heatmap (full width) -->
-        <div class="fd-grid fd-grid-1">
+        <!-- Row 5: Stock Heatmap + Finance News (side by side) -->
+        <div class="fd-grid fd-grid-2">
           <div class="fd-section" id="fdHeatmapSection">
             <div class="fd-section-header">
               <span class="fd-section-icon">🗺️</span>
               <span class="fd-section-title">Stock Heatmap</span>
               ${fullscreenBtn('heatmap')}
             </div>
-            <div class="fd-widget-container" style="height:800px;" id="fdStockHeatmap"></div>
+            <div class="fd-widget-container" style="height:4000px;" id="fdStockHeatmap"></div>
+          </div>
+          <div class="fd-section">
+            <div class="fd-section-header">
+              <span class="fd-section-icon">📰</span>
+              <span class="fd-section-title">Finance News</span>
+            </div>
+            <div class="fd-widget-container" style="height:4000px;" id="fdTopStories"></div>
           </div>
         </div>
 
-        <!-- Hotlists (full width) -->
-        <div class="fd-grid fd-grid-1">
+        <!-- Row 6: Hotlists + Company Profile (side by side) -->
+        <div class="fd-grid fd-grid-2">
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">🔥</span>
               <span class="fd-section-title">Hotlists</span>
             </div>
-            <div class="fd-widget-container" style="height:600px;" id="fdHotlists"></div>
+            <div class="fd-widget-container" style="height:3000px;" id="fdHotlists"></div>
+          </div>
+          <div class="fd-section">
+            <div class="fd-section-header">
+              <span class="fd-section-icon">📋</span>
+              <span class="fd-section-title">Financials</span>
+            </div>
+            <div class="fd-widget-container" style="height:3000px;" id="fdFundamentalData"></div>
           </div>
         </div>
 
-        <!-- Top Stories (full width) -->
-        <div class="fd-grid fd-grid-1">
+        <!-- Row 7: Mini Charts (3-column: Gold, Oil, S&P) -->
+        <div class="fd-grid fd-grid-3">
           <div class="fd-section">
             <div class="fd-section-header">
-              <span class="fd-section-icon">📰</span>
-              <span class="fd-section-title">Top Stories</span>
+              <span class="fd-section-icon">🥇</span>
+              <span class="fd-section-title">Gold</span>
             </div>
-            <div class="fd-widget-container" style="height:600px;" id="fdTopStories"></div>
+            <div class="fd-widget-container" style="height:300px;" id="fdMiniGold"></div>
+          </div>
+          <div class="fd-section">
+            <div class="fd-section-header">
+              <span class="fd-section-icon">🛢️</span>
+              <span class="fd-section-title">Oil WTI</span>
+            </div>
+            <div class="fd-widget-container" style="height:300px;" id="fdMiniOil"></div>
+          </div>
+          <div class="fd-section">
+            <div class="fd-section-header">
+              <span class="fd-section-icon">📈</span>
+              <span class="fd-section-title">S&P 500</span>
+            </div>
+            <div class="fd-widget-container" style="height:300px;" id="fdMiniSP"></div>
           </div>
         </div>
       </div>
     `;
 
-    // Now inject TradingView widgets programmatically
     this.initWidgets();
     this.attachEventListeners();
     this.attachFullscreenListeners();
   }
 
-  /**
-   * Inject all TradingView widgets using the createElement + innerHTML approach.
-   * This runs AFTER the skeleton HTML is inserted, so all container elements exist.
-   */
   private initWidgets(): void {
     const theme = getColorTheme();
     const locale = getLocale();
 
-    // 1. Ticker Tape — use container_id for proper rendering
+    // 1. Ticker Tape
     const tickerTape = document.getElementById('fdTickerTape');
     if (tickerTape) {
       tickerTape.style.height = '46px';
@@ -295,11 +305,13 @@ export class FinanceDashboard {
           { proName: 'FX_IDC:EURUSD', title: 'EUR/USD' },
           { proName: 'FX_IDC:GBPUSD', title: 'GBP/USD' },
           { proName: 'FX_IDC:USDJPY', title: 'USD/JPY' },
+          { proName: 'FX_IDC:USDTRY', title: 'USD/TRY' },
           { proName: 'BITSTAMP:BTCUSD', title: 'BTC/USD' },
           { proName: 'BITSTAMP:ETHUSD', title: 'ETH/USD' },
           { proName: 'TVC:GOLD', title: 'Gold' },
           { proName: 'TVC:USOIL', title: 'Oil WTI' },
-          { proName: 'FX_IDC:USDTRY', title: 'USD/TRY' },
+          { proName: 'TVC:SILVER', title: 'Silver' },
+          { proName: 'BINANCE:SOLUSDT', title: 'SOL/USDT' },
         ],
         showSymbolLogo: true, isTransparent: false, displayMode: 'adaptive',
         colorTheme: theme, locale,
@@ -318,6 +330,7 @@ export class FinanceDashboard {
             { s: 'FOREXCOM:SPXUSD', d: 'S&P 500' }, { s: 'FOREXCOM:NSXUSD', d: 'NASDAQ 100' },
             { s: 'INDEX:DEU40', d: 'DAX 40' }, { s: 'FOREXCOM:UKXGBP', d: 'FTSE 100' },
             { s: 'INDEX:NKY', d: 'Nikkei 225' }, { s: 'INDEX:HSI', d: 'Hang Seng' },
+            { s: 'BIST:XU100', d: 'BIST 100' },
           ]},
           { title: 'Forex', symbols: [
             { s: 'FX_IDC:EURUSD', d: 'EUR/USD' }, { s: 'FX_IDC:GBPUSD', d: 'GBP/USD' },
@@ -334,6 +347,11 @@ export class FinanceDashboard {
             { s: 'TVC:USOIL', d: 'Crude Oil WTI' }, { s: 'TVC:UKOIL', d: 'Brent Oil' },
             { s: 'TVC:PLATINUM', d: 'Platinum' }, { s: 'NYMEX:NG1!', d: 'Natural Gas' },
           ]},
+          { title: 'Bonds', symbols: [
+            { s: 'TVC:US10Y', d: 'US 10Y' }, { s: 'TVC:US02Y', d: 'US 2Y' },
+            { s: 'TVC:DE10Y', d: 'Germany 10Y' }, { s: 'TVC:GB10Y', d: 'UK 10Y' },
+            { s: 'TVC:JP10Y', d: 'Japan 10Y' },
+          ]},
         ],
       });
     }
@@ -348,7 +366,18 @@ export class FinanceDashboard {
       });
     }
 
-    // 4. Forex Cross Rates
+    // 4. Finance Social Feed / Timeline
+    const financeTimeline = document.getElementById('fdFinanceTimeline');
+    if (financeTimeline) {
+      embedTVWidget(financeTimeline, 'embed-widget-timeline.js', {
+        feedMode: 'market', market: 'stock',
+        isTransparent: false, displayMode: 'regular',
+        width: '100%', height: '100%',
+        colorTheme: theme, locale,
+      });
+    }
+
+    // 5. Forex Cross Rates
     const forexRates = document.getElementById('fdForexCrossRates');
     if (forexRates) {
       embedTVWidget(forexRates, 'embed-widget-forex-cross-rates.js', {
@@ -358,7 +387,7 @@ export class FinanceDashboard {
       });
     }
 
-    // 5. Crypto Market Screener
+    // 6. Crypto Market Screener
     const cryptoMarket = document.getElementById('fdCryptoMarket');
     if (cryptoMarket) {
       embedTVWidget(cryptoMarket, 'embed-widget-screener.js', {
@@ -368,7 +397,7 @@ export class FinanceDashboard {
       });
     }
 
-    // 6. Economic Calendar
+    // 7. Economic Calendar
     const econCalendar = document.getElementById('fdEconomicCalendar');
     if (econCalendar) {
       embedTVWidget(econCalendar, 'embed-widget-events.js', {
@@ -379,7 +408,7 @@ export class FinanceDashboard {
       });
     }
 
-    // 7. Stock Heatmap
+    // 8. Stock Heatmap
     const stockHeatmap = document.getElementById('fdStockHeatmap');
     if (stockHeatmap) {
       embedTVWidget(stockHeatmap, 'embed-widget-stock-heatmap.js', {
@@ -391,7 +420,17 @@ export class FinanceDashboard {
       });
     }
 
-    // 8. Hotlists
+    // 9. Finance News (Top Stories)
+    const topStories = document.getElementById('fdTopStories');
+    if (topStories) {
+      embedTVWidget(topStories, 'embed-widget-timeline.js', {
+        feedMode: 'all_symbols', isTransparent: false,
+        displayMode: 'regular', width: '100%', height: '100%',
+        colorTheme: theme, locale,
+      });
+    }
+
+    // 10. Hotlists
     const hotlists = document.getElementById('fdHotlists');
     if (hotlists) {
       embedTVWidget(hotlists, 'embed-widget-hotlists.js', {
@@ -401,13 +440,41 @@ export class FinanceDashboard {
       });
     }
 
-    // 9. Top Stories
-    const topStories = document.getElementById('fdTopStories');
-    if (topStories) {
-      embedTVWidget(topStories, 'embed-widget-timeline.js', {
-        feedMode: 'all_symbols', isTransparent: false,
-        displayMode: 'regular', width: '100%', height: '100%',
-        colorTheme: theme, locale,
+    // 11. Fundamental Data
+    const fundamentalData = document.getElementById('fdFundamentalData');
+    if (fundamentalData) {
+      embedTVWidget(fundamentalData, 'embed-widget-financials.js', {
+        colorTheme: theme, isTransparent: false,
+        largeChartUrl: '', displayMode: 'regular',
+        width: '100%', height: '100%', symbol: 'NASDAQ:AAPL', locale,
+      });
+    }
+
+    // 12. Mini Charts
+    const miniGold = document.getElementById('fdMiniGold');
+    if (miniGold) {
+      embedTVWidget(miniGold, 'embed-widget-mini-symbol-overview.js', {
+        symbol: 'TVC:GOLD', width: '100%', height: '100%',
+        locale, dateRange: '1M', colorTheme: theme,
+        isTransparent: false, autosize: true, largeChartUrl: '',
+      });
+    }
+
+    const miniOil = document.getElementById('fdMiniOil');
+    if (miniOil) {
+      embedTVWidget(miniOil, 'embed-widget-mini-symbol-overview.js', {
+        symbol: 'TVC:USOIL', width: '100%', height: '100%',
+        locale, dateRange: '1M', colorTheme: theme,
+        isTransparent: false, autosize: true, largeChartUrl: '',
+      });
+    }
+
+    const miniSP = document.getElementById('fdMiniSP');
+    if (miniSP) {
+      embedTVWidget(miniSP, 'embed-widget-mini-symbol-overview.js', {
+        symbol: 'FOREXCOM:SPXUSD', width: '100%', height: '100%',
+        locale, dateRange: '1M', colorTheme: theme,
+        isTransparent: false, autosize: true, largeChartUrl: '',
       });
     }
   }
@@ -464,10 +531,6 @@ export class FinanceDashboard {
     });
   }
 
-  /**
-   * Fullscreen overlay: clones the widget section into a fixed overlay
-   * that covers the page. Pressing ESC or the close button returns to normal.
-   */
   private attachFullscreenListeners(): void {
     if (!this.container) return;
     const theme = getColorTheme();
@@ -478,7 +541,6 @@ export class FinanceDashboard {
         const target = btn.dataset.expand;
         if (!target) return;
 
-        // Create fullscreen overlay
         const overlay = document.createElement('div');
         overlay.className = 'fd-fullscreen-overlay';
         overlay.innerHTML = `
@@ -490,16 +552,14 @@ export class FinanceDashboard {
         `;
 
         document.body.appendChild(overlay);
-        // Prevent body scroll
         document.body.style.overflow = 'hidden';
 
         const body = document.getElementById('fdFullscreenBody')!;
 
-        // Inject fresh TradingView widget into fullscreen
         if (target === 'forex') {
           embedTVWidget(body, 'embed-widget-forex-cross-rates.js', {
             width: '100%', height: '100%',
-            currencies: ['EUR', 'USD', 'JPY', 'GBP', 'CHF', 'AUD', 'CAD', 'TRY'],
+            currencies: ['EUR', 'USD', 'JPY', 'GBP', 'CHF', 'AUD', 'CAD', 'TRY', 'CNY', 'INR', 'BRL', 'MXN'],
             isTransparent: false, colorTheme: theme, locale,
           });
         } else if (target === 'advChart') {
@@ -515,7 +575,6 @@ export class FinanceDashboard {
           });
         }
 
-        // Close handlers
         const closeOverlay = () => {
           overlay.remove();
           document.body.style.overflow = '';

@@ -15463,6 +15463,10 @@ body.has-critical-banner .panels-grid {
   grid-template-columns: 1fr;
 }
 
+.fd-grid-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
 /* Section cards */
 .fd-section {
   background: var(--surface, #141414);
@@ -15631,6 +15635,9 @@ body.has-critical-banner .panels-grid {
 /* ─── Responsive ─── */
 @media (max-width: 1200px) {
   .fd-grid-2 {
+    grid-template-columns: 1fr;
+  }
+  .fd-grid-3 {
     grid-template-columns: 1fr;
   }
 }
