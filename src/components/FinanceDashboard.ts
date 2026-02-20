@@ -166,14 +166,14 @@ export class FinanceDashboard {
               <span class="fd-section-icon">📈</span>
               <span class="fd-section-title">Technical Analysis</span>
             </div>
-            <div class="fd-widget-container" style="height:420px;" id="fdTechnicalAnalysis"></div>
+            <div class="fd-widget-container" style="height:550px;" id="fdTechnicalAnalysis"></div>
           </div>
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">💱</span>
               <span class="fd-section-title">Forex Cross Rates</span>
             </div>
-            <div class="fd-widget-container" style="height:420px;" id="fdForexCrossRates"></div>
+            <div class="fd-widget-container" style="height:550px;" id="fdForexCrossRates"></div>
           </div>
         </div>
 
@@ -184,7 +184,7 @@ export class FinanceDashboard {
               <span class="fd-section-icon">🕯️</span>
               <span class="fd-section-title">Advanced Chart</span>
             </div>
-            <div class="fd-widget-container" style="height:500px;">
+            <div class="fd-widget-container" style="height:700px;">
               <iframe id="fd-adv" src="${advChartUrl}" style="width:100%;height:100%;border:none;display:block;" allowtransparency="true"></iframe>
             </div>
           </div>
@@ -197,14 +197,14 @@ export class FinanceDashboard {
               <span class="fd-section-icon">₿</span>
               <span class="fd-section-title">Cryptocurrency Market</span>
             </div>
-            <div class="fd-widget-container" style="height:460px;" id="fdCryptoMarket"></div>
+            <div class="fd-widget-container" style="height:600px;" id="fdCryptoMarket"></div>
           </div>
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">📅</span>
               <span class="fd-section-title">Economic Calendar</span>
             </div>
-            <div class="fd-widget-container" style="height:460px;" id="fdEconomicCalendar"></div>
+            <div class="fd-widget-container" style="height:600px;" id="fdEconomicCalendar"></div>
           </div>
         </div>
 
@@ -215,7 +215,7 @@ export class FinanceDashboard {
               <span class="fd-section-icon">🗺️</span>
               <span class="fd-section-title">Stock Heatmap</span>
             </div>
-            <div class="fd-widget-container" style="height:480px;" id="fdStockHeatmap"></div>
+            <div class="fd-widget-container" style="height:700px;" id="fdStockHeatmap"></div>
           </div>
         </div>
 
