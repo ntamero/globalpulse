@@ -1,5 +1,6 @@
 import { escapeHtml, sanitizeUrl } from '@/utils/sanitize';
 import { formatTime } from '@/utils';
+import { ArticleOverlay } from './ArticleOverlay';
 import type { NewsItem } from '@/types';
 
 export type TickerCategory = 'all' | 'politics' | 'finance' | 'tech' | 'sports' | 'crisis';
@@ -240,7 +241,9 @@ export class NewsTicker {
       return `
         <a class="ticker-item ${isAlert ? 'ticker-alert' : ''}"
            href="${sanitizeUrl(item.link)}"
-           target="_blank" rel="noopener"
+           data-article-url="${sanitizeUrl(item.link)}"
+           data-article-title="${escapeHtml(item.title)}"
+           data-article-source="${escapeHtml(item.source)}"
            data-idx="${idx}"
            title="${escapeHtml(item.source)} - ${escapeHtml(item.title)}">
           <span class="ticker-num">#${this.itemCounter - top.length + idx + 1}</span>
@@ -254,6 +257,19 @@ export class NewsTicker {
 
     // Duplicate for seamless loop
     this.tickerTrack.innerHTML += this.tickerTrack.innerHTML;
+
+    // Attach click handler for article overlay on ticker items
+    this.tickerTrack.querySelectorAll<HTMLAnchorElement>('.ticker-item').forEach(el => {
+      el.addEventListener('click', (e) => {
+        // Allow middle-click / ctrl+click to open in new tab
+        if (e.ctrlKey || e.metaKey || (e as MouseEvent).button === 1) return;
+        e.preventDefault();
+        const url = el.dataset.articleUrl;
+        const title = el.dataset.articleTitle;
+        const source = el.dataset.articleSource;
+        if (url) ArticleOverlay.show(url, title, source);
+      });
+    });
 
     // Calculate widths for scroll loop
     requestAnimationFrame(() => {

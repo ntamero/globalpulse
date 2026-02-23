@@ -3,7 +3,7 @@
  *
  * OpenStock-style professional trading dashboard — 100% finance-focused.
  * TradingView widgets for charts, markets, heatmaps, screeners.
- * Finance TV live streams. Real-time social timeline & news.
+ * Finance TV live streams. Real-time RSS news from global channels.
  *
  * Layout: 2-column grid with tall panels (extended vertically).
  *
@@ -12,6 +12,10 @@
  */
 
 import { getCurrentTheme } from '@/utils';
+import { formatTime } from '@/utils';
+import { escapeHtml, sanitizeUrl } from '@/utils/sanitize';
+import { ArticleOverlay } from './ArticleOverlay';
+import type { NewsItem } from '@/types';
 
 // ─── Finance TV Channels ─────────────────────────────────────
 interface FinanceTVChannel {
@@ -23,21 +27,24 @@ interface FinanceTVChannel {
 }
 
 const FINANCE_TV_CHANNELS: FinanceTVChannel[] = [
-  { id: 'bloomberg', name: 'Bloomberg TV', videoId: 'iEpJwprxDdk', category: 'us', icon: '🇺🇸' },
-  { id: 'cnbc', name: 'CNBC', videoId: '9NyxcX3rhQs', category: 'us', icon: '🇺🇸' },
-  { id: 'yahoo-finance', name: 'Yahoo Finance', videoId: 'KQp-e_XQnDE', category: 'us', icon: '🇺🇸' },
-  { id: 'sky-news', name: 'Sky News Business', videoId: 'YDvsBbKfLPA', category: 'europe', icon: '🇬🇧' },
-  { id: 'euronews', name: 'Euronews Business', videoId: '6aWYMmFsEKA', category: 'europe', icon: '🇪🇺' },
-  { id: 'dw-news', name: 'DW Business', videoId: 'LuKwFajn37U', category: 'europe', icon: '🇩🇪' },
-  { id: 'france24-en', name: 'France 24 Business', videoId: 'Ap-UM1O9RBU', category: 'europe', icon: '🇫🇷' },
-  { id: 'aljazeera', name: 'Al Jazeera Business', videoId: 'gCNeDWCI0vo', category: 'middle-east', icon: '🇶🇦' },
-  { id: 'alarabiya', name: 'Al Arabiya Business', videoId: 'n7eQejkXbnM', category: 'middle-east', icon: '🇸🇦' },
-  { id: 'trt-world', name: 'TRT World Business', videoId: 'ABfFhWzWs0s', category: 'middle-east', icon: '🇹🇷' },
-  { id: 'cna', name: 'CNA Markets', videoId: 'XWq5kBlakcQ', category: 'asia', icon: '🇸🇬' },
-  { id: 'nhk-world', name: 'NHK World Business', videoId: 'f0lYkdA-Gtw', category: 'asia', icon: '🇯🇵' },
+  { id: 'bloomberg', name: 'Bloomberg TV', videoId: 'iEpJwprxDdk', category: 'us', icon: '\u{1F1FA}\u{1F1F8}' },
+  { id: 'cnbc', name: 'CNBC', videoId: '9NyxcX3rhQs', category: 'us', icon: '\u{1F1FA}\u{1F1F8}' },
+  { id: 'yahoo-finance', name: 'Yahoo Finance', videoId: 'KQp-e_XQnDE', category: 'us', icon: '\u{1F1FA}\u{1F1F8}' },
+  { id: 'sky-news', name: 'Sky News Business', videoId: 'YDvsBbKfLPA', category: 'europe', icon: '\u{1F1EC}\u{1F1E7}' },
+  { id: 'euronews', name: 'Euronews Business', videoId: '6aWYMmFsEKA', category: 'europe', icon: '\u{1F1EA}\u{1F1FA}' },
+  { id: 'dw-news', name: 'DW Business', videoId: 'LuKwFajn37U', category: 'europe', icon: '\u{1F1E9}\u{1F1EA}' },
+  { id: 'france24-en', name: 'France 24 Business', videoId: 'Ap-UM1O9RBU', category: 'europe', icon: '\u{1F1EB}\u{1F1F7}' },
+  { id: 'aljazeera', name: 'Al Jazeera Business', videoId: 'gCNeDWCI0vo', category: 'middle-east', icon: '\u{1F1F6}\u{1F1E6}' },
+  { id: 'alarabiya', name: 'Al Arabiya Business', videoId: 'n7eQejkXbnM', category: 'middle-east', icon: '\u{1F1F8}\u{1F1E6}' },
+  { id: 'trt-world', name: 'TRT World Business', videoId: 'ABfFhWzWs0s', category: 'middle-east', icon: '\u{1F1F9}\u{1F1F7}' },
+  { id: 'cna', name: 'CNA Markets', videoId: 'XWq5kBlakcQ', category: 'asia', icon: '\u{1F1F8}\u{1F1EC}' },
+  { id: 'nhk-world', name: 'NHK World Business', videoId: 'f0lYkdA-Gtw', category: 'asia', icon: '\u{1F1EF}\u{1F1F5}' },
 ];
 
 type TVCategory = 'all' | 'us' | 'europe' | 'middle-east' | 'asia';
+
+// ─── Finance feed category keywords ─────────────────────────
+const FINANCE_KEYWORDS = /\b(market|stock|nasdaq|dow|s&p|economy|inflation|gdp|fed |ecb|interest rate|bank|invest|crypto|bitcoin|currency|trade|tariff|earnings|ipo|debt|bond|oil price|commodity|forex|finance|wall street|ftse|nikkei|hang seng|treasury|yield|profit|revenue|merger|acquisition|hedge fund|etf|index fund|dividend|SEC|FOMC|rate hike|recession|bull|bear market|venture capital|startup|funding|IPO|underwrite)/i;
 
 // ─── Helpers ────────────────────────────────────────────────
 
@@ -93,6 +100,8 @@ export class FinanceDashboard {
   private container: HTMLElement | null = null;
   private activeChannel: FinanceTVChannel = FINANCE_TV_CHANNELS[0] as FinanceTVChannel;
   private activeCategory: TVCategory = 'all';
+  private globalNewsItems: NewsItem[] = [];
+  private financeNewsItems: NewsItem[] = [];
 
   mount(target: HTMLElement): void {
     this.container = target;
@@ -107,6 +116,34 @@ export class FinanceDashboard {
       this.container.innerHTML = '';
     }
     document.querySelector('.fd-fullscreen-overlay')?.remove();
+  }
+
+  /**
+   * Receive RSS news items from App.ts loadNews pipeline.
+   * Split into global news and finance-specific news for Social Hub tabs.
+   */
+  public updateNews(items: NewsItem[]): void {
+    // Split items into finance-specific and global
+    const finance: NewsItem[] = [];
+    const global: NewsItem[] = [];
+
+    for (const item of items) {
+      const text = `${item.title} ${item.source}`;
+      if (FINANCE_KEYWORDS.test(text)) {
+        finance.push(item);
+      }
+      global.push(item);
+    }
+
+    // Sort by date, newest first
+    global.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
+    finance.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
+
+    this.globalNewsItems = global.slice(0, 100);
+    this.financeNewsItems = finance.slice(0, 100);
+
+    // Re-render the active news tab
+    this.renderActiveNewsTab();
   }
 
   private render(): void {
@@ -172,31 +209,32 @@ export class FinanceDashboard {
           </div>
           <div class="fd-section">
             <div class="fd-section-header">
-              <span class="fd-section-icon">💬</span>
-              <span class="fd-section-title">Finance Social Hub</span>
+              <span class="fd-section-icon">📰</span>
+              <span class="fd-section-title">News & Social Hub</span>
               <div class="fd-social-tabs" id="fdSocialTabs">
-                <button class="fd-social-tab active" data-stab="tweets">📈 Ideas</button>
-                <button class="fd-social-tab" data-stab="stocktwits">StockTwits</button>
-                <button class="fd-social-tab" data-stab="news">Market News</button>
+                <button class="fd-social-tab active" data-stab="global">🌍 Global</button>
+                <button class="fd-social-tab" data-stab="finance">💰 Finance</button>
+                <button class="fd-social-tab" data-stab="tv">📺 TV</button>
               </div>
             </div>
             <div class="fd-social-panels">
-              <div class="fd-social-panel active" id="fdSocialTweets" style="height:1160px;overflow:hidden;">
-                <!-- TradingView Community Timeline (replaced broken X/Twitter embeds) -->
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;height:100%;padding:4px;">
-                  <div id="fdTVTimeline1" style="height:100%;overflow:hidden;"></div>
-                  <div id="fdTVTimeline2" style="height:100%;overflow:hidden;"></div>
+              <div class="fd-social-panel active" id="fdSocialGlobal" style="height:1160px;overflow:hidden;">
+                <div class="fd-news-list" id="fdGlobalNewsList">
+                  <div class="fd-news-loading">Loading global news...</div>
                 </div>
               </div>
-              <div class="fd-social-panel" id="fdSocialStocktwits" style="height:1160px;overflow:hidden;">
+              <div class="fd-social-panel" id="fdSocialFinance" style="height:1160px;overflow:hidden;">
+                <div class="fd-news-list" id="fdFinanceNewsList">
+                  <div class="fd-news-loading">Loading finance news...</div>
+                </div>
               </div>
-              <div class="fd-social-panel" id="fdSocialNews" style="height:1160px;overflow:hidden;">
+              <div class="fd-social-panel" id="fdSocialTV" style="height:1160px;overflow:hidden;">
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Row 3: Forex Cross Rates + Advanced Chart (side by side) -->
+        <!-- Row 3: Forex Cross Rates + Advanced Chart (side by side) — 2x height -->
         <div class="fd-grid fd-grid-2">
           <div class="fd-section" id="fdForexSection">
             <div class="fd-section-header">
@@ -204,7 +242,7 @@ export class FinanceDashboard {
               <span class="fd-section-title">Forex Cross Rates</span>
               ${fullscreenBtn('forex')}
             </div>
-            <div class="fd-widget-container" style="height:2500px;" id="fdForexCrossRates"></div>
+            <div class="fd-widget-container" style="height:1200px;" id="fdForexCrossRates"></div>
           </div>
           <div class="fd-section" id="fdAdvChartSection">
             <div class="fd-section-header">
@@ -212,89 +250,88 @@ export class FinanceDashboard {
               <span class="fd-section-title">Advanced Chart</span>
               ${fullscreenBtn('advChart')}
             </div>
-            <div class="fd-widget-container" style="height:2500px;">
+            <div class="fd-widget-container" style="height:1200px;">
               <iframe id="fd-adv" src="${advChartUrl}" style="width:100%;height:100%;border:none;display:block;" allowtransparency="true"></iframe>
             </div>
           </div>
         </div>
 
-        <!-- Row 4: Crypto Market + Economic Calendar (side by side) -->
+        <!-- Row 4: Crypto Market + Economic Calendar (side by side) — 2x height -->
         <div class="fd-grid fd-grid-2">
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">₿</span>
               <span class="fd-section-title">Cryptocurrency Market</span>
             </div>
-            <div class="fd-widget-container" style="height:3000px;" id="fdCryptoMarket"></div>
+            <div class="fd-widget-container" style="height:1200px;" id="fdCryptoMarket"></div>
           </div>
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">📅</span>
               <span class="fd-section-title">Economic Calendar</span>
             </div>
-            <div class="fd-widget-container" style="height:3000px;" id="fdEconomicCalendar"></div>
+            <div class="fd-widget-container" style="height:1200px;" id="fdEconomicCalendar"></div>
           </div>
         </div>
 
-        <!-- Row 5: Stock Heatmap + Finance News (side by side) -->
+        <!-- Row 5: Precious Metals + Energy Commodities (NEW — replaces old Crypto Heatmap + Finance News) -->
         <div class="fd-grid fd-grid-2">
-          <div class="fd-section" id="fdCryptoHeatmapSection">
+          <div class="fd-section">
             <div class="fd-section-header">
-              <span class="fd-section-icon">🪙</span>
-              <span class="fd-section-title">Crypto Heatmap</span>
-              ${fullscreenBtn('cryptoHeatmap')}
+              <span class="fd-section-icon">🥇</span>
+              <span class="fd-section-title">Precious Metals</span>
             </div>
-            <div class="fd-widget-container" style="height:4000px;" id="fdCryptoHeatmap"></div>
+            <div class="fd-widget-container" style="height:800px;" id="fdPreciousMetals"></div>
           </div>
           <div class="fd-section">
             <div class="fd-section-header">
-              <span class="fd-section-icon">📰</span>
-              <span class="fd-section-title">Finance News</span>
+              <span class="fd-section-icon">🛢️</span>
+              <span class="fd-section-title">Energy</span>
             </div>
-            <div class="fd-widget-container" style="height:4000px;" id="fdTopStories"></div>
+            <div class="fd-widget-container" style="height:800px;" id="fdEnergy"></div>
           </div>
         </div>
 
-        <!-- Row 6: Hotlists + Company Profile (side by side) -->
+        <!-- Row 6: Hotlists + Company Profile (side by side) — 2x height -->
         <div class="fd-grid fd-grid-2">
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">🔥</span>
               <span class="fd-section-title">Hotlists</span>
             </div>
-            <div class="fd-widget-container" style="height:3000px;" id="fdHotlists"></div>
+            <div class="fd-widget-container" style="height:1200px;" id="fdHotlists"></div>
           </div>
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">📋</span>
               <span class="fd-section-title">Financials</span>
             </div>
-            <div class="fd-widget-container" style="height:3000px;" id="fdFundamentalData"></div>
+            <div class="fd-widget-container" style="height:1200px;" id="fdFundamentalData"></div>
           </div>
         </div>
 
-        <!-- Row 7: Mini Charts (3-column: Gold, Oil, S&P) -->
+        <!-- Row 7: Mini Charts (3-column: Gold, Oil, S&P) — taller -->
         <div class="fd-grid fd-grid-3">
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">🥇</span>
               <span class="fd-section-title">Gold</span>
             </div>
-            <div class="fd-widget-container" style="height:300px;" id="fdMiniGold"></div>
+            <div class="fd-widget-container" style="height:500px;" id="fdMiniGold"></div>
           </div>
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">🛢️</span>
               <span class="fd-section-title">Oil WTI</span>
             </div>
-            <div class="fd-widget-container" style="height:300px;" id="fdMiniOil"></div>
+            <div class="fd-widget-container" style="height:500px;" id="fdMiniOil"></div>
           </div>
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">📈</span>
               <span class="fd-section-title">S&P 500</span>
             </div>
-            <div class="fd-widget-container" style="height:300px;" id="fdMiniSP"></div>
+            <div class="fd-widget-container" style="height:500px;" id="fdMiniSP"></div>
           </div>
         </div>
       </div>
@@ -395,7 +432,7 @@ export class FinanceDashboard {
       });
     }
 
-    // 4. Finance Social Hub — 3 tabs: Tweets, StockTwits, Market News
+    // 4. Social Hub — Tab 3 (Finance TV): TradingView timelines as fallback content
     this.initSocialHub(theme, locale);
 
     // 5. Forex Cross Rates
@@ -429,31 +466,71 @@ export class FinanceDashboard {
       });
     }
 
-    // 8. Crypto Heatmap
-    const cryptoHeatmap = document.getElementById('fdCryptoHeatmap');
-    if (cryptoHeatmap) {
-      embedTVWidget(cryptoHeatmap, 'embed-widget-crypto-coins-heatmap.js', {
-        dataSource: 'Crypto',
-        blockSize: 'market_cap_calc',
-        blockColor: 'change',
+    // 8. Precious Metals — Symbol Overview with Gold, Silver, Platinum
+    const preciousMetals = document.getElementById('fdPreciousMetals');
+    if (preciousMetals) {
+      embedTVWidget(preciousMetals, 'embed-widget-symbol-overview.js', {
+        symbols: [
+          ['Gold', 'TVC:GOLD|12M'],
+          ['Silver', 'TVC:SILVER|12M'],
+          ['Platinum', 'TVC:PLATINUM|12M'],
+        ],
+        chartOnly: false,
+        width: '100%',
+        height: '100%',
         locale,
-        symbolUrl: '',
         colorTheme: theme,
-        hasTopBar: true,
-        isDataSetEnabled: true,
-        isZoomEnabled: true,
-        hasSymbolTooltip: true,
-        width: '100%', height: '100%',
+        autosize: true,
+        showVolume: false,
+        showMA: false,
+        hideDateRanges: false,
+        hideMarketStatus: false,
+        hideSymbolLogo: false,
+        scalePosition: 'right',
+        scaleMode: 'Normal',
+        fontFamily: '-apple-system, BlinkMacSystemFont, Trebuchet MS, Roboto, Ubuntu, sans-serif',
+        fontSize: '10',
+        noTimeScale: false,
+        valuesTracking: '1',
+        changeMode: 'price-and-percent',
+        chartType: 'area',
+        lineWidth: 2,
+        lineType: 0,
+        dateRanges: ['1d|1', '1m|30', '3m|60', '12m|1D', '60m|1W', 'all|1M'],
       });
     }
 
-    // 9. Finance News (Top Stories)
-    const topStories = document.getElementById('fdTopStories');
-    if (topStories) {
-      embedTVWidget(topStories, 'embed-widget-timeline.js', {
-        feedMode: 'all_symbols', isTransparent: false,
-        displayMode: 'regular', width: '100%', height: '100%',
-        colorTheme: theme, locale,
+    // 9. Energy — Symbol Overview with Oil WTI, Brent, Natural Gas
+    const energy = document.getElementById('fdEnergy');
+    if (energy) {
+      embedTVWidget(energy, 'embed-widget-symbol-overview.js', {
+        symbols: [
+          ['Oil WTI', 'TVC:USOIL|12M'],
+          ['Brent', 'TVC:UKOIL|12M'],
+          ['Natural Gas', 'TVC:NATURALGAS|12M'],
+        ],
+        chartOnly: false,
+        width: '100%',
+        height: '100%',
+        locale,
+        colorTheme: theme,
+        autosize: true,
+        showVolume: false,
+        showMA: false,
+        hideDateRanges: false,
+        hideMarketStatus: false,
+        hideSymbolLogo: false,
+        scalePosition: 'right',
+        scaleMode: 'Normal',
+        fontFamily: '-apple-system, BlinkMacSystemFont, Trebuchet MS, Roboto, Ubuntu, sans-serif',
+        fontSize: '10',
+        noTimeScale: false,
+        valuesTracking: '1',
+        changeMode: 'price-and-percent',
+        chartType: 'area',
+        lineWidth: 2,
+        lineType: 0,
+        dateRanges: ['1d|1', '1m|30', '3m|60', '12m|1D', '60m|1W', 'all|1M'],
       });
     }
 
@@ -507,78 +584,82 @@ export class FinanceDashboard {
   }
 
   /**
-   * Initialize the Finance Social Hub with 3 tabs:
-   * 1. Twitter/X Finance Timelines (real tweets)
-   * 2. StockTwits Trending (community sentiment)
-   * 3. TradingView Market News
+   * Initialize the Social Hub with 3 tabs:
+   * 1. Global News (RSS items from all feeds)
+   * 2. Finance News (RSS items filtered for finance keywords)
+   * 3. Finance TV (TradingView timelines — kept for live community content)
    */
   private initSocialHub(theme: string, locale: string): void {
-    // ─── Tab 1: TradingView Community Timelines (replaced broken X/Twitter embeds) ───
-    const tvTimeline1 = document.getElementById('fdTVTimeline1');
-    const tvTimeline2 = document.getElementById('fdTVTimeline2');
-    if (tvTimeline1) {
-      embedTVWidget(tvTimeline1, 'embed-widget-timeline.js', {
-        feedMode: 'market',
-        market: 'stock',
-        isTransparent: false,
-        displayMode: 'regular',
-        width: '100%',
-        height: '100%',
-        colorTheme: theme,
-        locale,
-      });
-    }
-    if (tvTimeline2) {
-      embedTVWidget(tvTimeline2, 'embed-widget-timeline.js', {
-        feedMode: 'market',
-        market: 'crypto',
-        isTransparent: false,
-        displayMode: 'regular',
-        width: '100%',
-        height: '100%',
-        colorTheme: theme,
-        locale,
-      });
-    }
-
-    // ─── Tab 2: StockTwits — use TradingView symbol-specific timeline as fallback ───
-    const stocktwitsPanel = document.getElementById('fdSocialStocktwits');
-    if (stocktwitsPanel) {
-      // Multiple symbol timelines for social-like experience
-      stocktwitsPanel.innerHTML = `
+    // Tab 3 (TV): Use TradingView timelines for live social/community content
+    const tvPanel = document.getElementById('fdSocialTV');
+    if (tvPanel) {
+      tvPanel.innerHTML = `
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;height:100%;padding:4px;">
-          <div id="fdST_BTC" style="height:100%;overflow:hidden;"></div>
-          <div id="fdST_SPX" style="height:100%;overflow:hidden;"></div>
+          <div id="fdTVTimeline1" style="height:100%;overflow:hidden;"></div>
+          <div id="fdTVTimeline2" style="height:100%;overflow:hidden;"></div>
         </div>
       `;
-      const stBtc = document.getElementById('fdST_BTC');
-      const stSpx = document.getElementById('fdST_SPX');
-      if (stBtc) {
-        embedTVWidget(stBtc, 'embed-widget-timeline.js', {
-          feedMode: 'symbol', symbol: 'BITSTAMP:BTCUSD',
+      const tvTimeline1 = document.getElementById('fdTVTimeline1');
+      const tvTimeline2 = document.getElementById('fdTVTimeline2');
+      if (tvTimeline1) {
+        embedTVWidget(tvTimeline1, 'embed-widget-timeline.js', {
+          feedMode: 'market', market: 'stock',
           isTransparent: false, displayMode: 'regular',
           width: '100%', height: '100%', colorTheme: theme, locale,
         });
       }
-      if (stSpx) {
-        embedTVWidget(stSpx, 'embed-widget-timeline.js', {
-          feedMode: 'symbol', symbol: 'FOREXCOM:SPXUSD',
+      if (tvTimeline2) {
+        embedTVWidget(tvTimeline2, 'embed-widget-timeline.js', {
+          feedMode: 'market', market: 'crypto',
           isTransparent: false, displayMode: 'regular',
           width: '100%', height: '100%', colorTheme: theme, locale,
         });
       }
+    }
+  }
+
+  /**
+   * Render the active news tab (Global or Finance) with RSS items
+   */
+  private renderActiveNewsTab(): void {
+    // Always render both tabs — the active one is visible via CSS
+    this.renderNewsTab('fdGlobalNewsList', this.globalNewsItems);
+    this.renderNewsTab('fdFinanceNewsList', this.financeNewsItems);
+  }
+
+  private renderNewsTab(containerId: string, items: NewsItem[]): void {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    if (items.length === 0) {
+      container.innerHTML = '<div class="fd-news-loading">Loading news...</div>';
+      return;
     }
 
-    // ─── Tab 3: TradingView Market News ───
-    const newsPanel = document.getElementById('fdSocialNews');
-    if (newsPanel) {
-      embedTVWidget(newsPanel, 'embed-widget-timeline.js', {
-        feedMode: 'market', market: 'stock',
-        isTransparent: false, displayMode: 'regular',
-        width: '100%', height: '100%',
-        colorTheme: theme, locale,
+    container.innerHTML = items.slice(0, 60).map(item => {
+      const timeStr = formatTime(item.pubDate);
+      const isAlert = item.isAlert || (item.threat && ['critical', 'high'].includes(item.threat.level));
+      return `
+        <div class="fd-news-item ${isAlert ? 'fd-news-alert' : ''}" data-article-url="${sanitizeUrl(item.link)}" data-article-title="${escapeHtml(item.title)}" data-article-source="${escapeHtml(item.source)}">
+          <div class="fd-news-item-source">${escapeHtml(item.source)}</div>
+          <div class="fd-news-item-title">${escapeHtml(item.title)}</div>
+          <div class="fd-news-item-time">${timeStr}</div>
+        </div>
+      `;
+    }).join('');
+
+    // Attach click handlers for article overlay
+    container.querySelectorAll<HTMLElement>('.fd-news-item').forEach(el => {
+      el.addEventListener('click', (e) => {
+        // Allow middle-click / ctrl+click to open in new tab
+        if (e.ctrlKey || e.metaKey || (e as MouseEvent).button === 1) return;
+        e.preventDefault();
+        const url = el.dataset.articleUrl;
+        const title = el.dataset.articleTitle;
+        const source = el.dataset.articleSource;
+        if (url) ArticleOverlay.show(url, title, source);
       });
-    }
+    });
   }
 
   private attachSocialTabListeners(): void {
@@ -593,9 +674,9 @@ export class FinanceDashboard {
         // Toggle active panel
         this.container!.querySelectorAll('.fd-social-panel').forEach(p => p.classList.remove('active'));
         const panelMap: Record<string, string> = {
-          tweets: 'fdSocialTweets',
-          stocktwits: 'fdSocialStocktwits',
-          news: 'fdSocialNews',
+          global: 'fdSocialGlobal',
+          finance: 'fdSocialFinance',
+          tv: 'fdSocialTV',
         };
         const targetPanel = document.getElementById(panelMap[tab] || '');
         if (targetPanel) targetPanel.classList.add('active');
@@ -709,14 +790,6 @@ export class FinanceDashboard {
         } else if (target === 'advChart') {
           const fsChartUrl = `https://s.tradingview.com/widgetembed/?frameElementId=fd-adv-fs&symbol=BITSTAMP%3ABTCUSD&interval=D&symboledit=1&saveimage=1&toolbarbg=${theme === 'dark' ? '1e1e1e' : 'f1f3f6'}&studies=MASimple%40tv-basicstudies%1FRSI%40tv-basicstudies&theme=${theme === 'dark' ? 'Dark' : 'Light'}&style=1&timezone=Etc%2FUTC&locale=${locale}&utm_source=globalpulse&utm_medium=widget&utm_campaign=chart`;
           body.innerHTML = `<iframe id="fd-adv-fs" src="${fsChartUrl}" style="width:100%;height:100%;border:none;display:block;" allowtransparency="true"></iframe>`;
-        } else if (target === 'cryptoHeatmap') {
-          embedTVWidget(body, 'embed-widget-crypto-coins-heatmap.js', {
-            dataSource: 'Crypto',
-            blockSize: 'market_cap_calc', blockColor: 'change', locale,
-            symbolUrl: '', colorTheme: theme, hasTopBar: true,
-            isDataSetEnabled: true, isZoomEnabled: true, hasSymbolTooltip: true,
-            width: '100%', height: '100%',
-          });
         }
 
         const closeOverlay = () => {
@@ -745,7 +818,6 @@ export class FinanceDashboard {
       case 'stockHeatmap': return '📊 Stock Heatmap';
       case 'forex': return '💱 Forex Cross Rates';
       case 'advChart': return '🕯️ Advanced Chart';
-      case 'cryptoHeatmap': return '🪙 Crypto Heatmap';
       default: return '';
     }
   }

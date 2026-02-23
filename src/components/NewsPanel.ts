@@ -8,6 +8,7 @@ import { analysisWorker, enrichWithVelocityML, getClusterAssetContext, MAX_DISTA
 import { getSourcePropagandaRisk, getSourceTier, getSourceType } from '@/config/feeds';
 import { SITE_VARIANT } from '@/config';
 import { t, getCurrentLanguage } from '@/services/i18n';
+import { ArticleOverlay } from './ArticleOverlay';
 
 /** Threshold for enabling virtual scrolling */
 const VIRTUAL_SCROLL_THRESHOLD = 15;
@@ -315,7 +316,7 @@ export class NewsPanel extends Panel {
           ${item.lang && item.lang !== getCurrentLanguage() ? `<span class="lang-badge">${item.lang.toUpperCase()}</span>` : ''}
           ${item.isAlert ? '<span class="alert-tag">ALERT</span>' : ''}
         </div>
-        <a class="item-title" href="${sanitizeUrl(item.link)}" target="_blank" rel="noopener">${escapeHtml(item.title)}</a>
+        <a class="item-title" href="${sanitizeUrl(item.link)}" data-article-url="${sanitizeUrl(item.link)}" data-article-title="${escapeHtml(item.title)}" data-article-source="${escapeHtml(item.source)}" rel="noopener">${escapeHtml(item.title)}</a>
         <div class="item-time">
           ${formatTime(item.pubDate)}
           ${getCurrentLanguage() !== 'en' ? `<button class="item-translate-btn" title="Translate" data-text="${escapeHtml(item.title)}">文</button>` : ''}
@@ -326,6 +327,7 @@ export class NewsPanel extends Panel {
       .join('');
 
     this.setContent(html);
+    this.bindArticleClickEvents();
   }
 
   private renderClusters(clusters: ClusteredEvent[]): void {
@@ -499,7 +501,7 @@ export class NewsPanel extends Panel {
           ${cluster.isAlert ? '<span class="alert-tag">ALERT</span>' : ''}
           ${categoryBadge}
         </div>
-        <a class="item-title" href="${sanitizeUrl(cluster.primaryLink)}" target="_blank" rel="noopener">${escapeHtml(cluster.primaryTitle)}</a>
+        <a class="item-title" href="${sanitizeUrl(cluster.primaryLink)}" data-article-url="${sanitizeUrl(cluster.primaryLink)}" data-article-title="${escapeHtml(cluster.primaryTitle)}" data-article-source="${escapeHtml(cluster.primarySource)}" rel="noopener">${escapeHtml(cluster.primaryTitle)}</a>
         <div class="cluster-meta">
           <span class="top-sources">${topSourcesHtml}</span>
           <span class="item-time">${formatTime(cluster.lastUpdated)}</span>
@@ -510,7 +512,24 @@ export class NewsPanel extends Panel {
     `;
   }
 
+  private bindArticleClickEvents(): void {
+    this.content.querySelectorAll<HTMLAnchorElement>('.item-title[data-article-url]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        // Allow middle-click / ctrl+click to open in new tab
+        if (e.ctrlKey || e.metaKey || (e as MouseEvent).button === 1) return;
+        e.preventDefault();
+        const url = el.dataset.articleUrl;
+        const title = el.dataset.articleTitle;
+        const source = el.dataset.articleSource;
+        if (url) ArticleOverlay.show(url, title, source);
+      });
+    });
+  }
+
   private bindRelatedAssetEvents(): void {
+    // Bind article click overlay events
+    this.bindArticleClickEvents();
+
     const containers = this.content.querySelectorAll<HTMLDivElement>('.related-assets');
     containers.forEach((container) => {
       const clusterId = container.dataset.clusterId;

@@ -3074,9 +3074,6 @@ export class App {
   }
 
   private async loadAllData(): Promise<void> {
-    // Finance variant uses TradingView widgets — no panel data loading needed
-    if (SITE_VARIANT === 'finance') return;
-
     const runGuarded = async (name: string, fn: () => Promise<void>): Promise<void> => {
       if (this.inFlight.has(name)) return;
       this.inFlight.add(name);
@@ -3088,6 +3085,12 @@ export class App {
         this.inFlight.delete(name);
       }
     };
+
+    // Finance variant only loads news (for ticker + dashboard RSS panels)
+    if (SITE_VARIANT === 'finance') {
+      await runGuarded('news', () => this.loadNews());
+      return;
+    }
 
     const tasks: Array<{ name: string; task: Promise<void> }> = [
       { name: 'news', task: runGuarded('news', () => this.loadNews()) },
@@ -3458,6 +3461,9 @@ export class App {
 
     // Feed news ticker with collected news
     this.newsTicker?.addNewsItems(collectedNews);
+
+    // Feed finance dashboard RSS panels with collected news
+    this.financeDashboard?.updateNews(collectedNews);
 
     // Feed sports panel with sports-relevant items
     (this.panels['sports'] as SportsPanel)?.updateNews(collectedNews);
@@ -4500,8 +4506,11 @@ export class App {
   }
 
   private setupRefreshIntervals(): void {
-    // Finance variant uses TradingView widgets — no refresh intervals needed
-    if (SITE_VARIANT === 'finance') return;
+    // Finance variant: only refresh news every hour (for ticker + dashboard RSS panels)
+    if (SITE_VARIANT === 'finance') {
+      this.scheduleRefresh('news', () => this.loadNews(), 60 * 60 * 1000);
+      return;
+    }
     // Always refresh news, markets, predictions, pizzint
     this.scheduleRefresh('news', () => this.loadNews(), REFRESH_INTERVALS.feeds);
     this.scheduleRefresh('markets', () => this.loadMarkets(), REFRESH_INTERVALS.markets);
