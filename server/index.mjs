@@ -7,6 +7,18 @@ import { fileURLToPath } from 'url';
 import { createServer } from 'http';
 import { setupChat, setupChatRoutes } from './chat.mjs';
 
+// ─── Global HTTP Proxy (for IPv6-only servers) ─────────────────
+const _proxyUrl = process.env.HTTPS_PROXY || process.env.HTTP_PROXY;
+if (_proxyUrl) {
+  try {
+    const { ProxyAgent, setGlobalDispatcher } = await import('undici');
+    setGlobalDispatcher(new ProxyAgent(_proxyUrl));
+    console.log(`[Proxy] Global HTTP proxy configured: ${_proxyUrl}`);
+  } catch (e) {
+    console.warn('[Proxy] Failed to configure proxy agent:', e.message);
+  }
+}
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const DIST = resolve(ROOT, 'dist');

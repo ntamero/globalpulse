@@ -160,32 +160,32 @@ export class FinanceDashboard {
           </div>
         </div>
 
-        <!-- Row 2: Forex Heatmap + Social Hub (side by side) -->
+        <!-- Row 2: Stock Heatmap + Social Hub (side by side) -->
         <div class="fd-grid fd-grid-2">
-          <div class="fd-section" id="fdForexHeatmapSection">
+          <div class="fd-section" id="fdStockHeatmapSection">
             <div class="fd-section-header">
-              <span class="fd-section-icon">🌡️</span>
-              <span class="fd-section-title">Forex Heat Map</span>
-              ${fullscreenBtn('forexHeatmap')}
+              <span class="fd-section-icon">📊</span>
+              <span class="fd-section-title">Stock Heatmap</span>
+              ${fullscreenBtn('stockHeatmap')}
             </div>
-            <div class="fd-widget-container" style="height:1200px;" id="fdForexHeatmap"></div>
+            <div class="fd-widget-container" style="height:1200px;" id="fdStockHeatmap"></div>
           </div>
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">💬</span>
               <span class="fd-section-title">Finance Social Hub</span>
               <div class="fd-social-tabs" id="fdSocialTabs">
-                <button class="fd-social-tab active" data-stab="tweets">𝕏 Tweets</button>
+                <button class="fd-social-tab active" data-stab="tweets">📈 Ideas</button>
                 <button class="fd-social-tab" data-stab="stocktwits">StockTwits</button>
                 <button class="fd-social-tab" data-stab="news">Market News</button>
               </div>
             </div>
             <div class="fd-social-panels">
-              <div class="fd-social-panel active" id="fdSocialTweets" style="height:1160px;overflow-y:auto;">
-                <!-- Twitter/X Finance Timelines -->
-                <div class="fd-tweets-grid">
-                  <div class="fd-tweet-col" id="fdTweetCol1"></div>
-                  <div class="fd-tweet-col" id="fdTweetCol2"></div>
+              <div class="fd-social-panel active" id="fdSocialTweets" style="height:1160px;overflow:hidden;">
+                <!-- TradingView Community Timeline (replaced broken X/Twitter embeds) -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;height:100%;padding:4px;">
+                  <div id="fdTVTimeline1" style="height:100%;overflow:hidden;"></div>
+                  <div id="fdTVTimeline2" style="height:100%;overflow:hidden;"></div>
                 </div>
               </div>
               <div class="fd-social-panel" id="fdSocialStocktwits" style="height:1160px;overflow:hidden;">
@@ -238,13 +238,13 @@ export class FinanceDashboard {
 
         <!-- Row 5: Stock Heatmap + Finance News (side by side) -->
         <div class="fd-grid fd-grid-2">
-          <div class="fd-section" id="fdHeatmapSection">
+          <div class="fd-section" id="fdCryptoHeatmapSection">
             <div class="fd-section-header">
-              <span class="fd-section-icon">🗺️</span>
-              <span class="fd-section-title">Stock Heatmap</span>
-              ${fullscreenBtn('heatmap')}
+              <span class="fd-section-icon">🪙</span>
+              <span class="fd-section-title">Crypto Heatmap</span>
+              ${fullscreenBtn('cryptoHeatmap')}
             </div>
-            <div class="fd-widget-container" style="height:4000px;" id="fdStockHeatmap"></div>
+            <div class="fd-widget-container" style="height:4000px;" id="fdCryptoHeatmap"></div>
           </div>
           <div class="fd-section">
             <div class="fd-section-header">
@@ -374,13 +374,24 @@ export class FinanceDashboard {
       });
     }
 
-    // 3. Forex Heat Map
-    const forexHeatmap = document.getElementById('fdForexHeatmap');
-    if (forexHeatmap) {
-      embedTVWidget(forexHeatmap, 'embed-widget-forex-heat-map.js', {
-        width: '100%', height: '100%',
-        currencies: ['EUR', 'USD', 'JPY', 'GBP', 'CHF', 'AUD', 'CAD', 'NZD', 'CNY', 'TRY', 'SEK', 'NOK'],
-        isTransparent: false, colorTheme: theme, locale,
+    // 3. Stock Heatmap
+    const stockHeatmap = document.getElementById('fdStockHeatmap');
+    if (stockHeatmap) {
+      embedTVWidget(stockHeatmap, 'embed-widget-stock-heatmap.js', {
+        exchanges: [],
+        dataSource: 'SPX500',
+        grouping: 'sector',
+        blockSize: 'market_cap_basic',
+        blockColor: 'change',
+        locale,
+        symbolUrl: '',
+        colorTheme: theme,
+        hasTopBar: true,
+        isDataSetEnabled: true,
+        isZoomEnabled: true,
+        hasSymbolTooltip: true,
+        width: '100%',
+        height: '100%',
       });
     }
 
@@ -418,15 +429,21 @@ export class FinanceDashboard {
       });
     }
 
-    // 8. Stock Heatmap
-    const stockHeatmap = document.getElementById('fdStockHeatmap');
-    if (stockHeatmap) {
-      embedTVWidget(stockHeatmap, 'embed-widget-stock-heatmap.js', {
-        exchanges: [] as string[], dataSource: 'SPX500', grouping: 'sector',
-        blockSize: 'market_cap_basic', blockColor: 'change', locale,
-        symbolUrl: '', colorTheme: theme, hasTopBar: true,
-        isZoomEnabled: true, hasSymbolTooltip: true,
-        isMonoSize: false, width: '100%', height: '100%',
+    // 8. Crypto Heatmap
+    const cryptoHeatmap = document.getElementById('fdCryptoHeatmap');
+    if (cryptoHeatmap) {
+      embedTVWidget(cryptoHeatmap, 'embed-widget-crypto-coins-heatmap.js', {
+        dataSource: 'Crypto',
+        blockSize: 'market_cap_calc',
+        blockColor: 'change',
+        locale,
+        symbolUrl: '',
+        colorTheme: theme,
+        hasTopBar: true,
+        isDataSetEnabled: true,
+        isZoomEnabled: true,
+        hasSymbolTooltip: true,
+        width: '100%', height: '100%',
       });
     }
 
@@ -496,42 +513,32 @@ export class FinanceDashboard {
    * 3. TradingView Market News
    */
   private initSocialHub(theme: string, locale: string): void {
-    const isDark = theme === 'dark';
-
-    // ─── Tab 1: Twitter/X Finance Timelines ───
-    const tweetCol1 = document.getElementById('fdTweetCol1');
-    const tweetCol2 = document.getElementById('fdTweetCol2');
-    if (tweetCol1 && tweetCol2) {
-      const twitterTheme = isDark ? 'dark' : 'light';
-      // Column 1: @markets (Bloomberg Markets)
-      tweetCol1.innerHTML = `
-        <a class="twitter-timeline"
-           href="https://twitter.com/markets"
-           data-height="1100"
-           data-theme="${twitterTheme}"
-           data-chrome="noheader nofooter noborders transparent"
-           data-dnt="true">Bloomberg Markets</a>
-      `;
-      // Column 2: @business (Bloomberg Business)
-      tweetCol2.innerHTML = `
-        <a class="twitter-timeline"
-           href="https://twitter.com/business"
-           data-height="1100"
-           data-theme="${twitterTheme}"
-           data-chrome="noheader nofooter noborders transparent"
-           data-dnt="true">Bloomberg</a>
-      `;
-      // Load Twitter widgets.js (only once)
-      if (!document.getElementById('twitter-wjs')) {
-        const twScript = document.createElement('script');
-        twScript.id = 'twitter-wjs';
-        twScript.src = 'https://platform.twitter.com/widgets.js';
-        twScript.async = true;
-        document.head.appendChild(twScript);
-      } else if ((window as unknown as Record<string, unknown>).twttr) {
-        // Twitter already loaded — re-render
-        ((window as unknown as Record<string, unknown>).twttr as { widgets: { load: () => void } }).widgets.load();
-      }
+    // ─── Tab 1: TradingView Community Timelines (replaced broken X/Twitter embeds) ───
+    const tvTimeline1 = document.getElementById('fdTVTimeline1');
+    const tvTimeline2 = document.getElementById('fdTVTimeline2');
+    if (tvTimeline1) {
+      embedTVWidget(tvTimeline1, 'embed-widget-timeline.js', {
+        feedMode: 'market',
+        market: 'stock',
+        isTransparent: false,
+        displayMode: 'regular',
+        width: '100%',
+        height: '100%',
+        colorTheme: theme,
+        locale,
+      });
+    }
+    if (tvTimeline2) {
+      embedTVWidget(tvTimeline2, 'embed-widget-timeline.js', {
+        feedMode: 'market',
+        market: 'crypto',
+        isTransparent: false,
+        displayMode: 'regular',
+        width: '100%',
+        height: '100%',
+        colorTheme: theme,
+        locale,
+      });
     }
 
     // ─── Tab 2: StockTwits — use TradingView symbol-specific timeline as fallback ───
@@ -677,11 +684,21 @@ export class FinanceDashboard {
 
         const body = document.getElementById('fdFullscreenBody')!;
 
-        if (target === 'forexHeatmap') {
-          embedTVWidget(body, 'embed-widget-forex-heat-map.js', {
+        if (target === 'stockHeatmap') {
+          embedTVWidget(body, 'embed-widget-stock-heatmap.js', {
+            exchanges: [],
+            dataSource: 'SPX500',
+            grouping: 'sector',
+            blockSize: 'market_cap_basic',
+            blockColor: 'change',
+            locale,
+            symbolUrl: '',
+            colorTheme: theme,
+            hasTopBar: true,
+            isDataSetEnabled: true,
+            isZoomEnabled: true,
+            hasSymbolTooltip: true,
             width: '100%', height: '100%',
-            currencies: ['EUR', 'USD', 'JPY', 'GBP', 'CHF', 'AUD', 'CAD', 'NZD', 'CNY', 'TRY', 'SEK', 'NOK', 'MXN', 'ZAR', 'BRL', 'INR'],
-            isTransparent: false, colorTheme: theme, locale,
           });
         } else if (target === 'forex') {
           embedTVWidget(body, 'embed-widget-forex-cross-rates.js', {
@@ -692,13 +709,13 @@ export class FinanceDashboard {
         } else if (target === 'advChart') {
           const fsChartUrl = `https://s.tradingview.com/widgetembed/?frameElementId=fd-adv-fs&symbol=BITSTAMP%3ABTCUSD&interval=D&symboledit=1&saveimage=1&toolbarbg=${theme === 'dark' ? '1e1e1e' : 'f1f3f6'}&studies=MASimple%40tv-basicstudies%1FRSI%40tv-basicstudies&theme=${theme === 'dark' ? 'Dark' : 'Light'}&style=1&timezone=Etc%2FUTC&locale=${locale}&utm_source=globalpulse&utm_medium=widget&utm_campaign=chart`;
           body.innerHTML = `<iframe id="fd-adv-fs" src="${fsChartUrl}" style="width:100%;height:100%;border:none;display:block;" allowtransparency="true"></iframe>`;
-        } else if (target === 'heatmap') {
-          embedTVWidget(body, 'embed-widget-stock-heatmap.js', {
-            exchanges: [] as string[], dataSource: 'SPX500', grouping: 'sector',
-            blockSize: 'market_cap_basic', blockColor: 'change', locale,
+        } else if (target === 'cryptoHeatmap') {
+          embedTVWidget(body, 'embed-widget-crypto-coins-heatmap.js', {
+            dataSource: 'Crypto',
+            blockSize: 'market_cap_calc', blockColor: 'change', locale,
             symbolUrl: '', colorTheme: theme, hasTopBar: true,
-            isZoomEnabled: true, hasSymbolTooltip: true,
-            isMonoSize: false, width: '100%', height: '100%',
+            isDataSetEnabled: true, isZoomEnabled: true, hasSymbolTooltip: true,
+            width: '100%', height: '100%',
           });
         }
 
@@ -725,10 +742,10 @@ export class FinanceDashboard {
 
   private getFullscreenTitle(target: string): string {
     switch (target) {
-      case 'forexHeatmap': return '🌡️ Forex Heat Map';
+      case 'stockHeatmap': return '📊 Stock Heatmap';
       case 'forex': return '💱 Forex Cross Rates';
       case 'advChart': return '🕯️ Advanced Chart';
-      case 'heatmap': return '🗺️ Stock Heatmap';
+      case 'cryptoHeatmap': return '🪙 Crypto Heatmap';
       default: return '';
     }
   }
