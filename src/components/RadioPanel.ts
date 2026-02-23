@@ -1,5 +1,5 @@
 /**
- * GlobalPulse — Radio Panel
+ * GlobalScope — Radio Panel
  *
  * Live radio streams from global news, talk, and music stations.
  * Uses native HTML5 <audio> element for HLS/direct streams.

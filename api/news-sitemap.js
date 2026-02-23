@@ -1,5 +1,5 @@
 /**
- * GlobalPulse — News Sitemap for Google News
+ * GlobalScope — News Sitemap for Google News
  *
  * Dynamic news sitemap that lists recent intelligence briefs.
  * Google News requires articles published within last 48 hours.
@@ -22,7 +22,7 @@ const COUNTRY_NAMES = {
   AE: 'UAE', IQ: 'Iraq', SY: 'Syria', AF: 'Afghanistan', YE: 'Yemen',
 };
 
-const BASE_URL = 'http://46.62.167.252';
+const BASE_URL = 'https://globalscope.live';
 const STORY_TYPES = ['ciianalysis', 'crisisalert', 'dailybrief'];
 
 export default function handler(req) {
@@ -50,11 +50,11 @@ export default function handler(req) {
     <loc>${BASE_URL}/api/story?c=${code}&amp;t=${type}</loc>
     <news:news>
       <news:publication>
-        <news:name>GlobalPulse</news:name>
+        <news:name>GlobalScope</news:name>
         <news:language>en</news:language>
       </news:publication>
       <news:publication_date>${yesterdayISO}</news:publication_date>
-      <news:title>${name} ${label} — GlobalPulse Intelligence</news:title>
+      <news:title>${name} ${label} — GlobalScope Intelligence</news:title>
       <news:keywords>${name}, intelligence, ${type.replace(/([A-Z])/g, ' $1').trim()}, geopolitics, OSINT</news:keywords>
     </news:news>
   </url>

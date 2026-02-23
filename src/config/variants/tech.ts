@@ -1,4 +1,4 @@
-// Tech/AI variant - GlobalPulse Tech
+// Tech/AI variant - GlobalScope Tech
 import type { PanelConfig, MapLayers } from '@/types';
 import type { VariantConfig } from './base';
 

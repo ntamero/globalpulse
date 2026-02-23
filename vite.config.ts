@@ -18,12 +18,12 @@ const VARIANT_META: Record<string, {
   features: string[];
 }> = {
   full: {
-    title: 'GlobalPulse - Real-Time Global Intelligence Dashboard',
+    title: 'GlobalScope - Real-Time Global Intelligence Dashboard',
     description: 'Real-time global intelligence dashboard with live news, markets, military tracking, infrastructure monitoring, and geopolitical data. OSINT in one view.',
     keywords: 'global intelligence, geopolitical dashboard, world news, market data, military bases, nuclear facilities, undersea cables, conflict zones, real-time monitoring, situation awareness, OSINT, flight tracking, AIS ships, earthquake monitor, protest tracker, power outages, oil prices, government spending, polymarket predictions',
-    url: 'http://46.62.167.252/',
-    siteName: 'GlobalPulse',
-    shortName: 'GlobalPulse',
+    url: 'https://globalscope.live/',
+    siteName: 'GlobalScope',
+    shortName: 'GlobalScope',
     subject: 'Real-Time Global Intelligence and Situation Awareness',
     classification: 'Intelligence Dashboard, OSINT Tool, News Aggregator',
     categories: ['news', 'productivity'],
@@ -43,12 +43,12 @@ const VARIANT_META: Record<string, {
     ],
   },
   tech: {
-    title: 'GlobalPulse Tech - Real-Time AI & Tech Industry Dashboard',
+    title: 'GlobalScope Tech - Real-Time AI & Tech Industry Dashboard',
     description: 'Real-time AI and tech industry dashboard tracking tech giants, AI labs, startup ecosystems, funding rounds, and tech events worldwide.',
     keywords: 'tech dashboard, AI industry, startup ecosystem, tech companies, AI labs, venture capital, tech events, tech conferences, cloud infrastructure, datacenters, tech layoffs, funding rounds, unicorns, FAANG, tech HQ, accelerators, Y Combinator, tech news',
-    url: 'http://46.62.167.252/',
-    siteName: 'GlobalPulse Tech',
-    shortName: 'GlobalPulse',
+    url: 'https://globalscope.live/',
+    siteName: 'GlobalScope Tech',
+    shortName: 'GlobalScope',
     subject: 'AI, Tech Industry, and Startup Ecosystem Intelligence',
     classification: 'Tech Dashboard, AI Tracker, Startup Intelligence',
     categories: ['news', 'business'],
@@ -67,11 +67,11 @@ const VARIANT_META: Record<string, {
     ],
   },
   finance: {
-    title: 'GlobalPulse Finance - Real-Time Markets & Trading Dashboard',
+    title: 'GlobalScope Finance - Real-Time Markets & Trading Dashboard',
     description: 'Real-time finance and trading dashboard tracking global markets, stock exchanges, central banks, commodities, forex, crypto, and economic indicators worldwide.',
     keywords: 'finance dashboard, trading dashboard, stock market, forex, commodities, central banks, crypto, economic indicators, market news, financial centers, stock exchanges, bonds, derivatives, fintech, hedge funds, IPO tracker, market analysis',
-    url: 'http://46.62.167.252/',
-    siteName: 'GlobalPulse Finance',
+    url: 'https://globalscope.live/',
+    siteName: 'GlobalScope Finance',
     shortName: 'FinanceMonitor',
     subject: 'Global Markets, Trading, and Financial Intelligence',
     classification: 'Finance Dashboard, Market Tracker, Trading Intelligence',
@@ -115,8 +115,8 @@ function htmlVariantPlugin(): Plugin {
         .replace(/<meta name="twitter:url" content=".*?" \/>/, `<meta name="twitter:url" content="${activeMeta.url}" />`)
         .replace(/<meta name="twitter:title" content=".*?" \/>/, `<meta name="twitter:title" content="${activeMeta.title}" />`)
         .replace(/<meta name="twitter:description" content=".*?" \/>/, `<meta name="twitter:description" content="${activeMeta.description}" />`)
-        .replace(/"name": "GlobalPulse"/, `"name": "${activeMeta.siteName}"`)
-        .replace(/"alternateName": "GlobalPulse Intelligence"/, `"alternateName": "${activeMeta.shortName}"`)
+        .replace(/"name": "GlobalScope"/, `"name": "${activeMeta.siteName}"`)
+        .replace(/"alternateName": "GlobalScope Intelligence"/, `"alternateName": "${activeMeta.shortName}"`)
         .replace(/"url": "http:\/\/46\.62\.167\.252\/"/, `"url": "${activeMeta.url}"`)
         .replace(/"description": "Real-time global intelligence dashboard with live news, markets, military tracking, infrastructure monitoring, and geopolitical data."/, `"description": "${activeMeta.description}"`)
         .replace(/"featureList": \[[\s\S]*?\]/, `"featureList": ${JSON.stringify(activeMeta.features, null, 8).replace(/\n/g, '\n      ')}`);

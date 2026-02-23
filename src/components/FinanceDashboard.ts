@@ -1,5 +1,5 @@
 /**
- * GlobalPulse — Finance Dashboard
+ * GlobalScope — Finance Dashboard
  *
  * OpenStock-style professional trading dashboard — 100% finance-focused.
  * TradingView widgets for charts, markets, heatmaps, screeners.

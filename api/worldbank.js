@@ -80,7 +80,7 @@ export default async function handler(request) {
     const response = await fetch(wbUrl, {
       headers: {
         'Accept': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (compatible; globalpulse/1.0)',
+        'User-Agent': 'Mozilla/5.0 (compatible; globalscope/1.0)',
       },
     });
 

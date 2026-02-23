@@ -1,5 +1,5 @@
 /**
- * GlobalPulse — Global Chat System
+ * GlobalScope — Global Chat System
  *
  * WebSocket-based real-time chat with:
  * - Topic-based channels (global, politics, finance, tech, crisis, sports)
@@ -227,7 +227,7 @@ async function callAI(prompt, channelId) {
   const channelInfo = CHANNELS.find(ch => ch.id === channelId);
   const channelName = channelInfo?.name || 'General';
 
-  const systemPrompt = `You are Pulse AI, an intelligent assistant in the GlobalPulse real-time news dashboard chat room.
+  const systemPrompt = `You are Pulse AI, an intelligent assistant in the GlobalScope real-time news dashboard chat room.
 Current date: ${new Date().toISOString().split('T')[0]}.
 Current channel: ${channelName} (${channelInfo?.description || ''}).
 
@@ -288,8 +288,8 @@ ${newsContext}`;
         headers: {
           'Authorization': `Bearer ${openrouterKey}`,
           'Content-Type': 'application/json',
-          'HTTP-Referer': 'http://46.62.167.252',
-          'X-Title': 'GlobalPulse Chat Bot',
+          'HTTP-Referer': 'https://globalscope.live',
+          'X-Title': 'GlobalScope Chat Bot',
         },
         body: JSON.stringify({
           model: 'openrouter/free',
@@ -392,12 +392,12 @@ async function sendVerificationEmail(email, code) {
       });
 
       await transporter.sendMail({
-        from: `"GlobalPulse Chat" <${smtpUser}>`,
+        from: `"GlobalScope Chat" <${smtpUser}>`,
         to: email,
-        subject: 'GlobalPulse Chat — Verification Code',
+        subject: 'GlobalScope Chat — Verification Code',
         html: `
           <div style="font-family: -apple-system, system-ui, sans-serif; max-width: 400px; margin: 0 auto; padding: 24px;">
-            <h2 style="color: #3b82f6; margin: 0 0 16px;">🌍 GlobalPulse Chat</h2>
+            <h2 style="color: #3b82f6; margin: 0 0 16px;">🌍 GlobalScope Chat</h2>
             <p style="color: #333; font-size: 14px;">Your verification code is:</p>
             <div style="background: #f0f4ff; border: 2px solid #3b82f6; border-radius: 12px; padding: 16px; text-align: center; margin: 16px 0;">
               <span style="font-size: 32px; font-weight: 700; letter-spacing: 8px; color: #1e40af;">${code}</span>

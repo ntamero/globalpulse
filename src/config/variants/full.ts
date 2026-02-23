@@ -1,4 +1,4 @@
-// Full geopolitical variant - GlobalPulse
+// Full geopolitical variant - GlobalScope
 import type { PanelConfig, MapLayers } from '@/types';
 import type { VariantConfig } from './base';
 

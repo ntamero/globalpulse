@@ -1,5 +1,5 @@
-# GlobalPulse — robots.txt
-# https://globalpulse.io
+# GlobalScope — robots.txt
+# https://globalscope.live
 
 User-agent: *
 Allow: /
@@ -10,8 +10,8 @@ Disallow: /ws/
 Disallow: /settings
 
 # Sitemaps
-Sitemap: http://46.62.167.252/sitemap.xml
-Sitemap: http://46.62.167.252/news-sitemap.xml
+Sitemap: https://globalscope.live/sitemap.xml
+Sitemap: https://globalscope.live/news-sitemap.xml
 
 # Crawl rate
 Crawl-delay: 2

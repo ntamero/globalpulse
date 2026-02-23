@@ -1,4 +1,4 @@
-// Finance/Trading variant - GlobalPulse Finance
+// Finance/Trading variant - GlobalScope Finance
 import type { PanelConfig, MapLayers } from '@/types';
 import type { VariantConfig } from './base';
 

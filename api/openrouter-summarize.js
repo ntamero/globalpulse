@@ -219,8 +219,8 @@ Rules:
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'http://46.62.167.252',
-        'X-Title': 'GlobalPulse',
+        'HTTP-Referer': 'https://globalscope.live',
+        'X-Title': 'GlobalScope',
       },
       body: JSON.stringify({
         model: MODEL,

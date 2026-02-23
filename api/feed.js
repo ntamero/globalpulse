@@ -1,14 +1,14 @@
 /**
- * GlobalPulse — RSS/Atom Feed
+ * GlobalScope — RSS/Atom Feed
  *
- * Provides an RSS 2.0 feed of GlobalPulse intelligence briefs
+ * Provides an RSS 2.0 feed of GlobalScope intelligence briefs
  * for feed readers and aggregators.
  *
  * GET /api/feed → RSS 2.0 XML
  * GET /api/feed?format=atom → Atom 1.0 XML
  */
 
-const BASE_URL = 'http://46.62.167.252';
+const BASE_URL = 'https://globalscope.live';
 
 const COUNTRIES = [
   { code: 'US', name: 'United States' },
@@ -71,7 +71,7 @@ function generateRSS(items, now) {
      xmlns:dc="http://purl.org/dc/elements/1.1/"
      xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>GlobalPulse Intelligence</title>
+    <title>GlobalScope Intelligence</title>
     <link>${BASE_URL}/</link>
     <description>AI-powered real-time global intelligence briefs covering geopolitics, markets, military activity, and crisis monitoring.</description>
     <language>en</language>
@@ -79,13 +79,13 @@ function generateRSS(items, now) {
     <atom:link href="${BASE_URL}/api/feed" rel="self" type="application/rss+xml" />
     <image>
       <url>${BASE_URL}/favico/android-chrome-192x192.png</url>
-      <title>GlobalPulse</title>
+      <title>GlobalScope</title>
       <link>${BASE_URL}/</link>
     </image>
     <ttl>60</ttl>
-    <copyright>GlobalPulse ${now.getFullYear()}</copyright>
-    <managingEditor>noreply@globalpulse.io (GlobalPulse)</managingEditor>
-    <webMaster>noreply@globalpulse.io (GlobalPulse)</webMaster>
+    <copyright>GlobalScope ${now.getFullYear()}</copyright>
+    <managingEditor>noreply@globalpulse.io (GlobalScope)</managingEditor>
+    <webMaster>noreply@globalpulse.io (GlobalScope)</webMaster>
     <category>News</category>
     <category>Intelligence</category>
     <category>Geopolitics</category>
@@ -96,7 +96,7 @@ ${items.map(item => `
       <description>${escapeXml(item.description)}</description>
       <pubDate>${item.pubDate}</pubDate>
       <guid isPermaLink="false">${escapeXml(item.guid)}</guid>
-      <dc:creator>GlobalPulse AI</dc:creator>
+      <dc:creator>GlobalScope AI</dc:creator>
       <category>${escapeXml(item.category)}</category>
       <category>${escapeXml(item.country)}</category>
     </item>`).join('')}
@@ -115,19 +115,19 @@ ${items.map(item => `
 function generateAtom(items, now) {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <title>GlobalPulse Intelligence</title>
+  <title>GlobalScope Intelligence</title>
   <subtitle>AI-powered real-time global intelligence briefs</subtitle>
   <link href="${BASE_URL}/" />
   <link href="${BASE_URL}/api/feed?format=atom" rel="self" type="application/atom+xml" />
   <id>${BASE_URL}/</id>
   <updated>${now.toISOString()}</updated>
   <author>
-    <name>GlobalPulse</name>
+    <name>GlobalScope</name>
     <uri>${BASE_URL}/</uri>
   </author>
   <icon>${BASE_URL}/favico/favicon-32x32.png</icon>
   <logo>${BASE_URL}/favico/android-chrome-192x192.png</logo>
-  <rights>GlobalPulse ${now.getFullYear()}</rights>
+  <rights>GlobalScope ${now.getFullYear()}</rights>
   <category term="intelligence" />
   <category term="news" />
   <category term="geopolitics" />
@@ -140,7 +140,7 @@ ${items.map(item => `
     <published>${item.pubDateISO}</published>
     <summary>${escapeXml(item.description)}</summary>
     <author>
-      <name>GlobalPulse AI</name>
+      <name>GlobalScope AI</name>
     </author>
     <category term="${escapeXml(item.country)}" />
     <category term="intelligence" />

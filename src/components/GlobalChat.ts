@@ -1,5 +1,5 @@
 /**
- * GlobalPulse — Global Chat Component
+ * GlobalScope — Global Chat Component
  *
  * Floating chat widget (bottom-right) with:
  * - Collapsed: pill button showing online count

@@ -1,5 +1,5 @@
 /**
- * GlobalPulse — Sports Panel
+ * GlobalScope — Sports Panel
  *
  * Aggregates sports news from RSS feeds and shows
  * categorized by sport type. Integrates with the news ticker.

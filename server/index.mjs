@@ -329,7 +329,7 @@ setupChat(httpServer);
 
 // Start server (use httpServer for WebSocket support)
 httpServer.listen(PORT, '0.0.0.0', () => {
-  console.log(`🌍 GlobalPulse server running on port ${PORT}`);
+  console.log(`🌍 GlobalScope server running on port ${PORT}`);
   console.log(`   Frontend: http://0.0.0.0:${PORT}`);
   console.log(`   API proxies: ${Object.keys(RSS_PROXIES).length} RSS + ${VERCEL_APIS.length} API handlers`);
   console.log(`   Chat WebSocket: ws://0.0.0.0:${PORT}/ws/chat`);

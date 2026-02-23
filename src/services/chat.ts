@@ -1,5 +1,5 @@
 /**
- * GlobalPulse — Chat WebSocket Client Service
+ * GlobalScope — Chat WebSocket Client Service
  *
  * Manages connection to the chat WebSocket server,
  * handles reconnection, session persistence, and message dispatching.
