@@ -75,6 +75,7 @@
     "maplibre-gl": "^5.16.0",
     "onnxruntime-web": "^1.23.2",
     "topojson-client": "^3.1.0",
+    "undici": "^7.22.0",
     "youtubei.js": "^16.0.1"
   }
 }
