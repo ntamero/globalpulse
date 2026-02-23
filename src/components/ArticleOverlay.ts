@@ -32,7 +32,10 @@ export const ArticleOverlay = {
     if (overlayInstance) close();
 
     // Use our server-side article reader proxy to bypass X-Frame-Options
-    const proxyUrl = `/api/article-reader?url=${encodeURIComponent(url)}`;
+    const params = new URLSearchParams({ url });
+    if (title) params.set('title', title);
+    if (source) params.set('source', source);
+    const proxyUrl = `/api/article-reader?${params.toString()}`;
 
     const overlay = document.createElement('div');
     overlay.className = 'article-overlay';

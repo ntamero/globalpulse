@@ -9,30 +9,145 @@ export const config = { runtime: 'edge' };
  * with X-Frame-Options and CSP headers stripped, so it can be
  * displayed in an iframe overlay on our site.
  *
- * Also injects a <base> tag so relative URLs resolve correctly.
+ * For Google News wrapper URLs, returns a redirect page that opens
+ * the article directly since Google News URLs can't be proxied.
  */
 
-// Fetch with timeout
 async function fetchWithTimeout(url, options, timeoutMs = 15000) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetch(url, { ...options, signal: controller.signal });
-    return response;
+    return await fetch(url, { ...options, signal: controller.signal });
   } finally {
     clearTimeout(timeout);
   }
 }
 
-// Block obviously dangerous domains
 const BLOCKED_DOMAINS = [
   'localhost', '127.0.0.1', '0.0.0.0',
-  '169.254.169.254', // AWS metadata
+  '169.254.169.254',
   'metadata.google.internal',
 ];
 
 function isDomainBlocked(hostname) {
   return BLOCKED_DOMAINS.some(d => hostname === d || hostname.endsWith('.' + d));
+}
+
+/**
+ * Check if URL is a Google News wrapper URL that can't be proxied.
+ */
+function isGoogleNewsUrl(url) {
+  try {
+    const u = new URL(url);
+    return u.hostname === 'news.google.com' && u.pathname.includes('/articles/');
+  } catch { return false; }
+}
+
+/**
+ * Generate a nice reader page that redirects to the actual article.
+ * Used for Google News URLs and other unproxyable sources.
+ */
+function generateRedirectPage(articleUrl, title, source) {
+  const safeUrl = articleUrl.replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  const safeTitle = (title || 'Article').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  const safeSource = (source || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${safeTitle}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 500px;
+      text-align: center;
+      background: #16213e;
+      border-radius: 16px;
+      padding: 3rem 2rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .icon { font-size: 3rem; margin-bottom: 1rem; }
+    .title {
+      font-size: 1.1rem;
+      line-height: 1.5;
+      margin-bottom: 0.5rem;
+      color: #fff;
+      font-weight: 600;
+    }
+    .source {
+      font-size: 0.85rem;
+      color: #ffa500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1.5rem;
+    }
+    .message {
+      font-size: 0.9rem;
+      color: #999;
+      margin-bottom: 2rem;
+      line-height: 1.5;
+    }
+    .btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #e94560, #c23152);
+      color: #fff;
+      text-decoration: none;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 12px rgba(233,69,96,0.3);
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(233,69,96,0.4);
+    }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: #e94560;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1.5rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .redirect-note {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="spinner"></div>
+    ${safeSource ? `<div class="source">${safeSource}</div>` : ''}
+    <div class="title">${safeTitle}</div>
+    <div class="message">Opening article from original source...</div>
+    <a class="btn" href="${safeUrl}" target="_top" rel="noopener">Read Article →</a>
+    <div class="redirect-note">This article will open from its original source</div>
+  </div>
+  <script>
+    // Auto-redirect to the article after a short delay
+    setTimeout(function() {
+      window.top.location.href = "${safeUrl.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}";
+    }, 1500);
+  </script>
+</body>
+</html>`;
 }
 
 export default async function handler(req) {
@@ -44,6 +159,8 @@ export default async function handler(req) {
 
   const requestUrl = new URL(req.url);
   const articleUrl = requestUrl.searchParams.get('url');
+  const title = requestUrl.searchParams.get('title') || '';
+  const source = requestUrl.searchParams.get('source') || '';
 
   if (!articleUrl) {
     return new Response(JSON.stringify({ error: 'Missing url parameter' }), {
@@ -71,43 +188,107 @@ export default async function handler(req) {
       });
     }
 
+    // Google News URLs can't be proxied — show redirect page
+    if (isGoogleNewsUrl(articleUrl)) {
+      const html = generateRedirectPage(articleUrl, title, source);
+      return new Response(html, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'no-cache',
+          ...corsHeaders,
+        },
+      });
+    }
+
     const response = await fetchWithTimeout(articleUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.9',
         'Accept-Encoding': 'identity',
+        'Referer': 'https://www.google.com/',
       },
       redirect: 'follow',
     }, 15000);
 
     if (!response.ok) {
-      return new Response(JSON.stringify({ error: `Upstream returned ${response.status}` }), {
-        status: 502,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      // If upstream fails, show redirect page instead of error
+      const html = generateRedirectPage(articleUrl, title, source);
+      return new Response(html, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'no-cache',
+          ...corsHeaders,
+        },
+      });
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+
+    // Only proxy HTML responses
+    if (!contentType.includes('text/html') && !contentType.includes('application/xhtml')) {
+      const html = generateRedirectPage(articleUrl, title, source);
+      return new Response(html, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'no-cache',
+          ...corsHeaders,
+        },
       });
     }
 
     let html = await response.text();
 
-    // Determine base URL for relative resource resolution
-    const baseUrl = parsedUrl.origin + parsedUrl.pathname.replace(/\/[^/]*$/, '/');
+    // If the response looks like a redirect page (very short with meta-refresh or JS redirect),
+    // try to extract the target URL
+    if (html.length < 5000) {
+      const metaRefresh = html.match(/content=["']\d+;\s*url=([^"']+)/i);
+      const jsRedirect = html.match(/(?:window\.)?location(?:\.href)?\s*=\s*["']([^"']+)/i);
+      const redirectUrl = metaRefresh?.[1] || jsRedirect?.[1];
 
-    // Inject <base> tag right after <head> so relative URLs resolve correctly
-    // Also inject minimal styling to improve readability
+      if (redirectUrl && redirectUrl.startsWith('http')) {
+        // Follow the extracted redirect
+        try {
+          const redirectResponse = await fetchWithTimeout(redirectUrl, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+              'Accept-Language': 'en-US,en;q=0.9',
+              'Referer': 'https://www.google.com/',
+            },
+            redirect: 'follow',
+          }, 12000);
+
+          if (redirectResponse.ok) {
+            html = await redirectResponse.text();
+          }
+        } catch { /* use original html */ }
+      }
+    }
+
+    // Determine base URL for relative resource resolution
+    const finalUrl = response.url || articleUrl;
+    const finalParsed = new URL(finalUrl);
+    const baseUrl = finalParsed.origin + finalParsed.pathname.replace(/\/[^/]*$/, '/');
+
+    // Inject <base> tag and reader styles
     const baseTag = `<base href="${baseUrl}" target="_self">`;
     const readerStyle = `<style>
-      /* Article reader overlay adjustments */
       body { margin: 0 !important; }
-      /* Hide common cookie/consent banners, paywalls, popups */
       [class*="cookie"], [class*="consent"], [class*="paywall"],
       [class*="subscribe-wall"], [class*="modal-overlay"],
       [id*="cookie"], [id*="consent"], [id*="paywall"],
       [class*="ad-slot"], [class*="ad-container"], [class*="advertisement"],
       .fc-consent-root, #onetrust-banner-sdk, .qc-cmp2-container,
-      [class*="newsletter-signup"], [class*="popup-overlay"] {
+      [class*="newsletter-signup"], [class*="popup-overlay"],
+      [class*="sticky-header"], [class*="site-nav"],
+      .tp-modal, .tp-backdrop, [class*="piano"] {
         display: none !important;
       }
+      /* Prevent scripts from showing alerts/popups */
     </style>`;
 
     if (html.includes('<head>')) {
@@ -118,26 +299,27 @@ export default async function handler(req) {
       html = `${baseTag}${readerStyle}${html}`;
     }
 
-    // Return HTML with security headers stripped
     return new Response(html, {
       status: 200,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
         'Cache-Control': 'public, max-age=600, s-maxage=600',
-        // Explicitly NOT setting X-Frame-Options or CSP frame-ancestors
-        // so the content can be embedded in our iframe
         ...corsHeaders,
       },
     });
   } catch (error) {
     const isTimeout = error.name === 'AbortError';
     console.error('Article reader error:', articleUrl, error.message);
-    return new Response(JSON.stringify({
-      error: isTimeout ? 'Article fetch timeout' : 'Failed to fetch article',
-      details: error.message,
-    }), {
-      status: isTimeout ? 504 : 502,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders },
+
+    // On error, show redirect page instead of JSON error
+    const html = generateRedirectPage(articleUrl, title, source);
+    return new Response(html, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'no-cache',
+        ...corsHeaders,
+      },
     });
   }
 }
