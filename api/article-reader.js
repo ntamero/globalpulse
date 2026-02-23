@@ -133,19 +133,13 @@ function generateRedirectPage(articleUrl, title, source) {
 </head>
 <body>
   <div class="container">
-    <div class="spinner"></div>
+    <div class="icon">📰</div>
     ${safeSource ? `<div class="source">${safeSource}</div>` : ''}
     <div class="title">${safeTitle}</div>
-    <div class="message">Opening article from original source...</div>
-    <a class="btn" href="${safeUrl}" target="_top" rel="noopener">Read Article →</a>
-    <div class="redirect-note">This article will open from its original source</div>
+    <div class="message">This article is available from its original source</div>
+    <a class="btn" href="${safeUrl}" target="_blank" rel="noopener">Read Article →</a>
+    <div class="redirect-note">Click to open article from its original source</div>
   </div>
-  <script>
-    // Auto-redirect to the article after a short delay
-    setTimeout(function() {
-      window.top.location.href = "${safeUrl.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}";
-    }, 1500);
-  </script>
 </body>
 </html>`;
 }
