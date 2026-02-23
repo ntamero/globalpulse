@@ -241,6 +241,7 @@ function vercelEdgeAdapter(handlerPath) {
 
 // Register Vercel-style API handlers
 const VERCEL_APIS = [
+  'article-reader',
   'rss-proxy',
   'yahoo-finance',
   'coingecko',

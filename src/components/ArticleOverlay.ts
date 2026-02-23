@@ -2,8 +2,9 @@
  * ArticleOverlay — Inline article viewer
  *
  * Opens news article links in a full-screen overlay with an iframe,
- * instead of opening new browser tabs. Provides a clean reading experience
- * with close button, escape key support, and fallback for X-Frame-Options.
+ * using a server-side article-reader proxy to bypass X-Frame-Options.
+ * Provides a clean reading experience with close button, escape key support,
+ * and fallback link for sites that still can't be displayed.
  *
  * Usage: ArticleOverlay.show(url, title?, source?)
  */
@@ -29,6 +30,9 @@ export const ArticleOverlay = {
   show(url: string, title?: string, source?: string): void {
     // Close existing overlay if open
     if (overlayInstance) close();
+
+    // Use our server-side article reader proxy to bypass X-Frame-Options
+    const proxyUrl = `/api/article-reader?url=${encodeURIComponent(url)}`;
 
     const overlay = document.createElement('div');
     overlay.className = 'article-overlay';
@@ -57,7 +61,7 @@ export const ArticleOverlay = {
           </div>
           <iframe
             class="article-overlay-iframe"
-            src="${escapeHtml(url)}"
+            src="${escapeHtml(proxyUrl)}"
             sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
             referrerpolicy="no-referrer"
           ></iframe>
@@ -79,19 +83,19 @@ export const ArticleOverlay = {
         iframe.style.opacity = '1';
       });
 
-      // If iframe fails to load (X-Frame-Options etc.), show fallback after timeout
+      // If iframe still loading after timeout, show fallback
       setTimeout(() => {
         if (loading && loading.style.display !== 'none') {
           loading.innerHTML = `
             <div class="article-overlay-fallback">
-              <p>This site doesn't allow embedded viewing.</p>
+              <p>This article is taking too long to load.</p>
               <a href="${escapeHtml(url)}" target="_blank" rel="noopener" class="article-overlay-fallback-btn">
                 Open in New Tab →
               </a>
             </div>
           `;
         }
-      }, 8000);
+      }, 12000);
     }
 
     // Close handlers

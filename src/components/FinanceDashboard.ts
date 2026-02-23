@@ -98,7 +98,7 @@ function fullscreenBtn(sectionId: string): string {
 
 export class FinanceDashboard {
   private container: HTMLElement | null = null;
-  private activeChannel: FinanceTVChannel = FINANCE_TV_CHANNELS[0] as FinanceTVChannel;
+  private activeChannel: FinanceTVChannel = FINANCE_TV_CHANNELS.find(c => c.id === 'yahoo-finance') || FINANCE_TV_CHANNELS[0] as FinanceTVChannel;
   private activeCategory: TVCategory = 'all';
   private globalNewsItems: NewsItem[] = [];
   private financeNewsItems: NewsItem[] = [];
@@ -234,7 +234,7 @@ export class FinanceDashboard {
           </div>
         </div>
 
-        <!-- Row 3: Forex Cross Rates + Advanced Chart (side by side) — 2x height -->
+        <!-- Row 3: Forex Cross Rates + Advanced Chart (side by side) — 4x height -->
         <div class="fd-grid fd-grid-2">
           <div class="fd-section" id="fdForexSection">
             <div class="fd-section-header">
@@ -242,7 +242,7 @@ export class FinanceDashboard {
               <span class="fd-section-title">Forex Cross Rates</span>
               ${fullscreenBtn('forex')}
             </div>
-            <div class="fd-widget-container" style="height:1200px;" id="fdForexCrossRates"></div>
+            <div class="fd-widget-container" style="height:2400px;" id="fdForexCrossRates"></div>
           </div>
           <div class="fd-section" id="fdAdvChartSection">
             <div class="fd-section-header">
@@ -250,88 +250,88 @@ export class FinanceDashboard {
               <span class="fd-section-title">Advanced Chart</span>
               ${fullscreenBtn('advChart')}
             </div>
-            <div class="fd-widget-container" style="height:1200px;">
+            <div class="fd-widget-container" style="height:2400px;">
               <iframe id="fd-adv" src="${advChartUrl}" style="width:100%;height:100%;border:none;display:block;" allowtransparency="true"></iframe>
             </div>
           </div>
         </div>
 
-        <!-- Row 4: Crypto Market + Economic Calendar (side by side) — 2x height -->
+        <!-- Row 4: Crypto Market + Economic Calendar (side by side) — 4x height -->
         <div class="fd-grid fd-grid-2">
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">₿</span>
               <span class="fd-section-title">Cryptocurrency Market</span>
             </div>
-            <div class="fd-widget-container" style="height:1200px;" id="fdCryptoMarket"></div>
+            <div class="fd-widget-container" style="height:2400px;" id="fdCryptoMarket"></div>
           </div>
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">📅</span>
               <span class="fd-section-title">Economic Calendar</span>
             </div>
-            <div class="fd-widget-container" style="height:1200px;" id="fdEconomicCalendar"></div>
+            <div class="fd-widget-container" style="height:2400px;" id="fdEconomicCalendar"></div>
           </div>
         </div>
 
-        <!-- Row 5: Precious Metals + Energy Commodities (NEW — replaces old Crypto Heatmap + Finance News) -->
+        <!-- Row 5: Precious Metals + Energy Commodities — 2x height -->
         <div class="fd-grid fd-grid-2">
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">🥇</span>
               <span class="fd-section-title">Precious Metals</span>
             </div>
-            <div class="fd-widget-container" style="height:800px;" id="fdPreciousMetals"></div>
+            <div class="fd-widget-container" style="height:1600px;" id="fdPreciousMetals"></div>
           </div>
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">🛢️</span>
               <span class="fd-section-title">Energy</span>
             </div>
-            <div class="fd-widget-container" style="height:800px;" id="fdEnergy"></div>
+            <div class="fd-widget-container" style="height:1600px;" id="fdEnergy"></div>
           </div>
         </div>
 
-        <!-- Row 6: Hotlists + Company Profile (side by side) — 2x height -->
+        <!-- Row 6: Hotlists + Company Profile (side by side) — 4x height -->
         <div class="fd-grid fd-grid-2">
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">🔥</span>
               <span class="fd-section-title">Hotlists</span>
             </div>
-            <div class="fd-widget-container" style="height:1200px;" id="fdHotlists"></div>
+            <div class="fd-widget-container" style="height:2400px;" id="fdHotlists"></div>
           </div>
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">📋</span>
               <span class="fd-section-title">Financials</span>
             </div>
-            <div class="fd-widget-container" style="height:1200px;" id="fdFundamentalData"></div>
+            <div class="fd-widget-container" style="height:2400px;" id="fdFundamentalData"></div>
           </div>
         </div>
 
-        <!-- Row 7: Mini Charts (3-column: Gold, Oil, S&P) — taller -->
+        <!-- Row 7: Mini Charts (3-column: Gold, Oil, S&P) — 2x taller -->
         <div class="fd-grid fd-grid-3">
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">🥇</span>
               <span class="fd-section-title">Gold</span>
             </div>
-            <div class="fd-widget-container" style="height:500px;" id="fdMiniGold"></div>
+            <div class="fd-widget-container" style="height:1000px;" id="fdMiniGold"></div>
           </div>
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">🛢️</span>
               <span class="fd-section-title">Oil WTI</span>
             </div>
-            <div class="fd-widget-container" style="height:500px;" id="fdMiniOil"></div>
+            <div class="fd-widget-container" style="height:1000px;" id="fdMiniOil"></div>
           </div>
           <div class="fd-section">
             <div class="fd-section-header">
               <span class="fd-section-icon">📈</span>
               <span class="fd-section-title">S&P 500</span>
             </div>
-            <div class="fd-widget-container" style="height:500px;" id="fdMiniSP"></div>
+            <div class="fd-widget-container" style="height:1000px;" id="fdMiniSP"></div>
           </div>
         </div>
       </div>
