@@ -31,6 +31,7 @@ const NASA_FIRMS_KEY = process.env.NASA_FIRMS_API_KEY || process.env.FIRMS_API_K
 const FRED_API_KEY = process.env.FRED_API_KEY || "";
 const CLOUDFLARE_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN || "";
 const ACLED_ACCESS_TOKEN = process.env.ACLED_ACCESS_TOKEN || "";
+const NOAA_TOKEN = process.env.NOAA_TOKEN || "";
 
 // -- In-memory cache --
 const cacheStore = new Map();
@@ -1426,6 +1427,194 @@ app.get("/api/gdelt-tensions", async (req, res) => {
   app.handle(req, res);
 });
 
+
+// ================================================================
+//  NOAA WEATHER ENDPOINTS
+// ================================================================
+
+// -- ao) NOAA Weather Forecast (by lat/lon) --
+app.get("/api/weather-forecast", async (req, res) => {
+  try {
+    const { lat, lon } = req.query;
+    if (!lat || !lon) return res.status(400).json({ error: "lat and lon required" });
+    const cacheKey = `weather-forecast-${lat}-${lon}`;
+    const cached = cacheGet(cacheKey);
+    if (cached) return res.json(cached);
+
+    // Step 1: Get grid point from NWS (free, no key needed)
+    const pointUrl = `https://api.weather.gov/points/${lat},${lon}`;
+    const pointResp = await fetch(pointUrl, {
+      headers: { "User-Agent": "GlobalScope/1.0 (tamer@globalscope.live)" }
+    });
+
+    if (pointResp.ok) {
+      const pointData = await pointResp.json();
+      const forecastUrl = pointData.properties?.forecast;
+      if (forecastUrl) {
+        const fcResp = await fetch(forecastUrl, {
+          headers: { "User-Agent": "GlobalScope/1.0 (tamer@globalscope.live)" }
+        });
+        if (fcResp.ok) {
+          const fcData = await fcResp.json();
+          const result = {
+            source: "NWS",
+            location: pointData.properties?.relativeLocation?.properties || {},
+            periods: (fcData.properties?.periods || []).slice(0, 14),
+            updated: fcData.properties?.updated
+          };
+          cacheSet(cacheKey, result, 30 * 60 * 1000); // 30 min cache
+          return res.json(result);
+        }
+      }
+    }
+
+    // Fallback: Use Open-Meteo for non-US locations (also free, no key)
+    const omUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode,windspeed_10m_max&current_weather=true&timezone=auto&forecast_days=7`;
+    const omResp = await fetch(omUrl);
+    if (!omResp.ok) return res.status(502).json({ error: "Weather API failed" });
+    const omData = await omResp.json();
+    const result = { source: "Open-Meteo", ...omData };
+    cacheSet(cacheKey, result, 30 * 60 * 1000);
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// -- ap) NOAA Climate Data (historical) --
+app.get("/api/noaa-climate", async (req, res) => {
+  try {
+    if (!NOAA_TOKEN) return res.status(503).json({ error: "NOAA_TOKEN not configured" });
+    const { dataset, station, start, end, datatype, limit } = req.query;
+    const ds = dataset || "GHCND"; // Global Historical Climatology Network Daily
+    const cacheKey = `noaa-climate-${ds}-${station || "all"}-${start}-${end}-${datatype}`;
+    const cached = cacheGet(cacheKey);
+    if (cached) return res.json(cached);
+
+    let url = `https://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=${ds}&limit=${limit || 100}`;
+    if (station) url += `&stationid=${station}`;
+    if (start) url += `&startdate=${start}`;
+    if (end) url += `&enddate=${end}`;
+    if (datatype) url += `&datatypeid=${datatype}`;
+
+    const resp = await fetch(url, {
+      headers: { token: NOAA_TOKEN }
+    });
+    if (!resp.ok) return res.status(resp.status).json({ error: `NOAA API ${resp.status}` });
+    const data = await resp.json();
+    cacheSet(cacheKey, data, 60 * 60 * 1000); // 1 hour cache
+    res.json(data);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// -- aq) NOAA Weather Alerts (active) --
+app.get("/api/weather-alerts", async (req, res) => {
+  try {
+    const { area, severity, status } = req.query;
+    const cacheKey = `weather-alerts-${area || "all"}-${severity || "all"}`;
+    const cached = cacheGet(cacheKey);
+    if (cached) return res.json(cached);
+
+    let url = "https://api.weather.gov/alerts/active?status=" + (status || "actual");
+    if (area) url += `&area=${area}`;
+    if (severity) url += `&severity=${severity}`;
+
+    const resp = await fetch(url, {
+      headers: { "User-Agent": "GlobalScope/1.0 (tamer@globalscope.live)" }
+    });
+    if (!resp.ok) return res.status(resp.status).json({ error: `NWS API ${resp.status}` });
+    const data = await resp.json();
+    const alerts = (data.features || []).map(f => ({
+      id: f.properties?.id,
+      event: f.properties?.event,
+      severity: f.properties?.severity,
+      headline: f.properties?.headline,
+      description: f.properties?.description?.substring(0, 500),
+      areas: f.properties?.areaDesc,
+      onset: f.properties?.onset,
+      expires: f.properties?.expires
+    }));
+    const result = { count: alerts.length, alerts: alerts.slice(0, 50) };
+    cacheSet(cacheKey, result, 10 * 60 * 1000); // 10 min cache
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// -- ar) NOAA Stations --
+app.get("/api/noaa-stations", async (req, res) => {
+  try {
+    if (!NOAA_TOKEN) return res.status(503).json({ error: "NOAA_TOKEN not configured" });
+    const { extent, dataset, limit } = req.query;
+    const cacheKey = `noaa-stations-${extent || "all"}-${dataset || "GHCND"}`;
+    const cached = cacheGet(cacheKey);
+    if (cached) return res.json(cached);
+
+    let url = `https://www.ncdc.noaa.gov/cdo-web/api/v2/stations?datasetid=${dataset || "GHCND"}&limit=${limit || 100}`;
+    if (extent) url += `&extent=${extent}`; // lat1,lon1,lat2,lon2
+
+    const resp = await fetch(url, {
+      headers: { token: NOAA_TOKEN }
+    });
+    if (!resp.ok) return res.status(resp.status).json({ error: `NOAA API ${resp.status}` });
+    const data = await resp.json();
+    cacheSet(cacheKey, data, 24 * 60 * 60 * 1000); // 24h cache
+    res.json(data);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// -- as) Global Weather (Open-Meteo - free, no key, worldwide) --
+app.get("/api/global-weather", async (req, res) => {
+  try {
+    const { cities } = req.query;
+    // Default major cities
+    const defaultCities = [
+      { name: "Istanbul", lat: 41.01, lon: 28.98 },
+      { name: "London", lat: 51.51, lon: -0.13 },
+      { name: "New York", lat: 40.71, lon: -74.01 },
+      { name: "Tokyo", lat: 35.68, lon: 139.69 },
+      { name: "Dubai", lat: 25.20, lon: 55.27 },
+      { name: "Sydney", lat: -33.87, lon: 151.21 },
+      { name: "Moscow", lat: 55.76, lon: 37.62 },
+      { name: "Beijing", lat: 39.90, lon: 116.40 },
+      { name: "Sao Paulo", lat: -23.55, lon: -46.63 },
+      { name: "Lagos", lat: 6.52, lon: 3.38 }
+    ];
+
+    const cacheKey = "global-weather-main";
+    const cached = cacheGet(cacheKey);
+    if (cached) return res.json(cached);
+
+    const lats = defaultCities.map(c => c.lat).join(",");
+    const lons = defaultCities.map(c => c.lon).join(",");
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto&forecast_days=3`;
+
+    const resp = await fetch(url);
+    if (!resp.ok) return res.status(502).json({ error: "Open-Meteo API failed" });
+    const data = await resp.json();
+
+    // Map results to cities
+    const results = Array.isArray(data) ? data.map((d, i) => ({
+      city: defaultCities[i].name,
+      lat: defaultCities[i].lat,
+      lon: defaultCities[i].lon,
+      current: d.current_weather,
+      daily: d.daily
+    })) : [{ city: defaultCities[0].name, current: data.current_weather, daily: data.daily }];
+
+    const result = { cities: results, updated: new Date().toISOString() };
+    cacheSet(cacheKey, result, 30 * 60 * 1000); // 30 min cache
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ================================================================
 //  CATCH-ALL 404
 // ================================================================
@@ -1436,6 +1625,6 @@ app.all("/api/*", (req, res) => {
 // -- Start server --
 app.listen(PORT, HOST, () => {
   console.log("GlobalPulse proxy server v2 running at http://" + HOST + ":" + PORT);
-  console.log("Endpoints: 35+ API routes");
-  console.log("API Keys: OPENROUTER=" + (OPENROUTER_API_KEY ? "YES" : "NO") + " GROQ=" + (GROQ_API_KEY ? "YES" : "NO") + " NASA=" + (NASA_FIRMS_KEY ? "YES" : "NO") + " FRED=" + (FRED_API_KEY ? "YES" : "NO") + " CF=" + (CLOUDFLARE_API_TOKEN ? "YES" : "NO") + " ACLED=" + (ACLED_ACCESS_TOKEN ? "YES" : "NO"));
+  console.log("Endpoints: 40+ API routes");
+  console.log("API Keys: OPENROUTER=" + (OPENROUTER_API_KEY ? "YES" : "NO") + " GROQ=" + (GROQ_API_KEY ? "YES" : "NO") + " NASA=" + (NASA_FIRMS_KEY ? "YES" : "NO") + " FRED=" + (FRED_API_KEY ? "YES" : "NO") + " CF=" + (CLOUDFLARE_API_TOKEN ? "YES" : "NO") + " NOAA=" + (NOAA_TOKEN ? "YES" : "NO") + " ACLED=" + (ACLED_ACCESS_TOKEN ? "YES" : "NO"));
 });
