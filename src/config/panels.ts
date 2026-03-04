@@ -46,6 +46,14 @@ const FULL_PANELS: Record<string, PanelConfig> = {
   'population-exposure': { name: 'Population Exposure', enabled: true, priority: 2 },
   radio: { name: 'Live Radio', enabled: true, priority: 2 },
   sports: { name: 'Sports', enabled: true, priority: 2 },
+  'tech-events': { name: 'Tech Events', enabled: true, priority: 2 },
+  'tech-hubs': { name: 'Tech Hubs', enabled: true, priority: 2 },
+  'sports-tv': { name: 'Sports TV', enabled: true, priority: 2 },
+  'market-radar': { name: 'Market Radar', enabled: true, priority: 1 },
+  'fear-greed': { name: 'Fear & Greed', enabled: true, priority: 1 },
+  'forex-rates': { name: 'Forex Rates', enabled: true, priority: 1 },
+  'defi-tvl': { name: 'DeFi TVL', enabled: true, priority: 2 },
+  'world-clocks': { name: 'World Clocks', enabled: true, priority: 2 },
 };
 
 const FULL_MAP_LAYERS: MapLayers = {
@@ -87,6 +95,7 @@ const FULL_MAP_LAYERS: MapLayers = {
   centralBanks: false,
   commodityHubs: false,
   gulfInvestments: false,
+  sportsMatches: false,
 };
 
 const FULL_MOBILE_MAP_LAYERS: MapLayers = {
@@ -128,6 +137,7 @@ const FULL_MOBILE_MAP_LAYERS: MapLayers = {
   centralBanks: false,
   commodityHubs: false,
   gulfInvestments: false,
+  sportsMatches: false,
 };
 
 // ============================================
@@ -209,6 +219,7 @@ const TECH_MAP_LAYERS: MapLayers = {
   centralBanks: false,
   commodityHubs: false,
   gulfInvestments: false,
+  sportsMatches: false,
 };
 
 const TECH_MOBILE_MAP_LAYERS: MapLayers = {
@@ -250,6 +261,7 @@ const TECH_MOBILE_MAP_LAYERS: MapLayers = {
   centralBanks: false,
   commodityHubs: false,
   gulfInvestments: false,
+  sportsMatches: false,
 };
 
 // ============================================
@@ -326,6 +338,7 @@ const FINANCE_MAP_LAYERS: MapLayers = {
   centralBanks: true,
   commodityHubs: false,
   gulfInvestments: false,
+  sportsMatches: false,
 };
 
 const FINANCE_MOBILE_MAP_LAYERS: MapLayers = {
@@ -367,14 +380,108 @@ const FINANCE_MOBILE_MAP_LAYERS: MapLayers = {
   centralBanks: true,
   commodityHubs: false,
   gulfInvestments: false,
+  sportsMatches: false,
+};
+
+// ============================================
+// SPORTS VARIANT (Live Scores/News/TV)
+// ============================================
+const SPORTS_PANELS: Record<string, PanelConfig> = {
+  map: { name: 'Sports World Map', enabled: true, priority: 1 },
+  'live-news': { name: 'Sports Headlines', enabled: true, priority: 1 },
+  'sports-tv': { name: 'Sports TV', enabled: true, priority: 1 },
+  'sport-soccer': { name: 'Football', enabled: true, priority: 1 },
+  'sport-basketball': { name: 'Basketball', enabled: true, priority: 1 },
+  'sport-tennis': { name: 'Tennis', enabled: true, priority: 1 },
+  'sport-f1': { name: 'F1 / Motor', enabled: true, priority: 1 },
+  'sport-cricket': { name: 'Cricket', enabled: true, priority: 1 },
+  monitors: { name: 'My Monitors', enabled: true, priority: 2 },
+};
+
+const SPORTS_MAP_LAYERS: MapLayers = {
+  conflicts: false,
+  bases: false,
+  cables: false,
+  pipelines: false,
+  hotspots: false,
+  ais: false,
+  nuclear: false,
+  irradiators: false,
+  sanctions: false,
+  weather: true,
+  economic: false,
+  waterways: false,
+  outages: false,
+  cyberThreats: false,
+  datacenters: false,
+  protests: false,
+  flights: false,
+  military: false,
+  natural: false,
+  spaceports: false,
+  minerals: false,
+  fires: false,
+  ucdpEvents: false,
+  displacement: false,
+  climate: false,
+  startupHubs: false,
+  cloudRegions: false,
+  accelerators: false,
+  techHQs: false,
+  techEvents: false,
+  stockExchanges: false,
+  financialCenters: false,
+  centralBanks: false,
+  commodityHubs: false,
+  gulfInvestments: false,
+  sportsMatches: true,
+};
+
+const SPORTS_MOBILE_MAP_LAYERS: MapLayers = {
+  conflicts: false,
+  bases: false,
+  cables: false,
+  pipelines: false,
+  hotspots: false,
+  ais: false,
+  nuclear: false,
+  irradiators: false,
+  sanctions: false,
+  weather: false,
+  economic: false,
+  waterways: false,
+  outages: false,
+  cyberThreats: false,
+  datacenters: false,
+  protests: false,
+  flights: false,
+  military: false,
+  natural: false,
+  spaceports: false,
+  minerals: false,
+  fires: false,
+  ucdpEvents: false,
+  displacement: false,
+  climate: false,
+  startupHubs: false,
+  cloudRegions: false,
+  accelerators: false,
+  techHQs: false,
+  techEvents: false,
+  stockExchanges: false,
+  financialCenters: false,
+  centralBanks: false,
+  commodityHubs: false,
+  gulfInvestments: false,
+  sportsMatches: true,
 };
 
 // ============================================
 // VARIANT-AWARE EXPORTS
 // ============================================
-export const DEFAULT_PANELS = SITE_VARIANT === 'tech' ? TECH_PANELS : SITE_VARIANT === 'finance' ? FINANCE_PANELS : FULL_PANELS;
-export const DEFAULT_MAP_LAYERS = SITE_VARIANT === 'tech' ? TECH_MAP_LAYERS : SITE_VARIANT === 'finance' ? FINANCE_MAP_LAYERS : FULL_MAP_LAYERS;
-export const MOBILE_DEFAULT_MAP_LAYERS = SITE_VARIANT === 'tech' ? TECH_MOBILE_MAP_LAYERS : SITE_VARIANT === 'finance' ? FINANCE_MOBILE_MAP_LAYERS : FULL_MOBILE_MAP_LAYERS;
+export const DEFAULT_PANELS = SITE_VARIANT === 'tech' ? TECH_PANELS : SITE_VARIANT === 'finance' ? FINANCE_PANELS : SITE_VARIANT === 'sports' ? SPORTS_PANELS : FULL_PANELS;
+export const DEFAULT_MAP_LAYERS = SITE_VARIANT === 'tech' ? TECH_MAP_LAYERS : SITE_VARIANT === 'finance' ? FINANCE_MAP_LAYERS : SITE_VARIANT === 'sports' ? SPORTS_MAP_LAYERS : FULL_MAP_LAYERS;
+export const MOBILE_DEFAULT_MAP_LAYERS = SITE_VARIANT === 'tech' ? TECH_MOBILE_MAP_LAYERS : SITE_VARIANT === 'finance' ? FINANCE_MOBILE_MAP_LAYERS : SITE_VARIANT === 'sports' ? SPORTS_MOBILE_MAP_LAYERS : FULL_MOBILE_MAP_LAYERS;
 
 // Monitor palette — fixed category colors persisted to localStorage (not theme-dependent)
 export const MONITOR_COLORS = [

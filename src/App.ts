@@ -88,6 +88,14 @@ import {
   RadioPanel,
   SportsPanel,
 } from '@/components';
+import { SportPanel, SPORT_CONFIGS } from '@/components/SportPanel';
+import { SportsTVPanel } from '@/components/SportsTVPanel';
+import { TechHubsPanel } from '@/components/TechHubsPanel';
+import { MarketRadarPanel } from '@/components/MarketRadarPanel';
+import { FearGreedPanel } from '@/components/FearGreedPanel';
+import { ForexPanel } from '@/components/ForexPanel';
+import { DefiTVLPanel } from '@/components/DefiTVLPanel';
+import { WorldClocksPanel } from '@/components/WorldClocksPanel';
 import type { SearchResult } from '@/components/SearchModal';
 import { collectStoryData } from '@/services/story-data';
 import { renderStoryToCanvas } from '@/services/story-renderer';
@@ -1820,11 +1828,19 @@ export class App {
               <span class="variant-icon">📈</span>
               <span class="variant-label">${t('header.finance')}</span>
             </a>
+            <span class="variant-divider"></span>
+            <a href="#"
+               class="variant-option ${SITE_VARIANT === 'sports' ? 'active' : ''}"
+               data-variant="sports"
+               title="${t('header.sports') || 'SPORTS'}${SITE_VARIANT === 'sports' ? ` ${t('common.currentVariant')}` : ''}">
+              <span class="variant-icon">⚽</span>
+              <span class="variant-label">${t('header.sports') || 'SPORTS'}</span>
+            </a>
           </div>
           <span class="logo">GLOBALSCOPE</span><span class="version">v${__APP_VERSION__}</span>${BETA_MODE ? '<span class="beta-badge">BETA</span>' : ''}
-          <a href="https://x.com/ntamero" target="_blank" rel="noopener" class="credit-link" title="@ntamero">
+          <a href="https://x.com/globalscope" target="_blank" rel="noopener" class="credit-link" title="@globalscope">
             <svg class="x-logo" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-            <span class="credit-text">@ntamero</span>
+            <span class="credit-text">@globalscope</span>
           </a>
           <a href="https://github.com/ntamero/globalpulse" target="_blank" rel="noopener" class="github-link" title="${t('header.viewOnGitHub')}">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
@@ -2073,6 +2089,68 @@ export class App {
 
       this.financeDashboard = new FinanceDashboard();
       this.financeDashboard.mount(panelsGrid);
+      return; // Skip standard panel creation
+    }
+
+    // ── Sports Dashboard Mode ──
+    // When sports variant is active, show map + per-sport panels
+    if (SITE_VARIANT === 'sports') {
+      // Live News Panel
+      const liveNewsPanel = new LiveNewsPanel();
+      this.panels['live-news'] = liveNewsPanel;
+
+      // Sports TV Panel
+      const sportsTVPanel = new SportsTVPanel();
+      this.panels['sports-tv'] = sportsTVPanel;
+
+      // Per-sport panels (Football, Basketball, Tennis, F1, Cricket)
+      const sportPanels: SportPanel[] = [];
+      for (const config of SPORT_CONFIGS) {
+        const panel = new SportPanel(config);
+        this.panels[`sport-${config.id}`] = panel;
+        sportPanels.push(panel);
+      }
+
+      // Monitor Panel
+      const monitorPanel = new MonitorPanel(this.monitors);
+      this.panels['monitors'] = monitorPanel;
+      monitorPanel.onChanged((monitors) => {
+        this.monitors = monitors;
+        this.loadNews();
+      });
+
+      // Add panels to grid in order
+      const sportsPanelOrder = [
+        'live-news', 'sports-tv',
+        ...SPORT_CONFIGS.map(c => `sport-${c.id}`),
+        'monitors',
+      ];
+      sportsPanelOrder.forEach((key) => {
+        const panel = this.panels[key];
+        if (panel) panelsGrid.appendChild(panel.getElement());
+      });
+
+      // Aggregate map markers from all sport panels
+      const allSportMarkers = new Map<string, unknown[]>();
+      window.addEventListener('sport-panel-markers', ((e: CustomEvent) => {
+        if (this.map && e.detail) {
+          const { sportId, markers } = e.detail;
+          allSportMarkers.set(sportId, markers);
+          // Flatten all sport markers into one array for the map
+          const combined = Array.from(allSportMarkers.values()).flat();
+          this.map.setSportsMatches(combined as import('./components/MapContainer').SportsMatchMarker[]);
+        }
+      }) as EventListener);
+
+      window.addEventListener('sports-match-focus', ((e: CustomEvent) => {
+        if (this.map && e.detail) {
+          const { lat, lng, zoom } = e.detail;
+          this.map.setCenter(lat, lng, zoom || 8);
+        }
+      }) as EventListener);
+
+      this.applyPanelSettings();
+      this.applyInitialUrlState();
       return; // Skip standard panel creation
     }
 
@@ -2330,8 +2408,23 @@ export class App {
     const sportsPanel = new SportsPanel();
     this.panels['sports'] = sportsPanel;
 
-    // Tech Events Panel (tech variant only - but create for all to allow toggling)
+    // Sports TV Panel (all variants)
+    const sportsTVPanel = new SportsTVPanel();
+    this.panels['sports-tv'] = sportsTVPanel;
+
+    // Tech Events Panel (all variants)
     this.panels['events'] = new TechEventsPanel('events');
+    this.panels['tech-events'] = this.panels['events'];
+
+    // Tech Hubs Panel (all variants)
+    this.panels['tech-hubs'] = new TechHubsPanel();
+
+    // XED-style finance panels (all variants)
+    this.panels['market-radar'] = new MarketRadarPanel();
+    this.panels['fear-greed'] = new FearGreedPanel();
+    this.panels['forex-rates'] = new ForexPanel();
+    this.panels['defi-tvl'] = new DefiTVLPanel();
+    this.panels['world-clocks'] = new WorldClocksPanel();
 
     // Service Status Panel (primarily for tech variant)
     const serviceStatusPanel = new ServiceStatusPanel();
@@ -2416,6 +2509,20 @@ export class App {
       this.currentTimeRange = range;
       this.applyTimeRangeFilterToNewsPanelsDebounced();
     });
+
+    // Sports variant: listen for match marker updates from SportsPanel
+    window.addEventListener('sports-matches-update', ((e: CustomEvent) => {
+      if (this.map && e.detail) {
+        this.map.setSportsMatches(e.detail);
+      }
+    }) as EventListener);
+
+    window.addEventListener('sports-match-focus', ((e: CustomEvent) => {
+      if (this.map && e.detail) {
+        const { lat, lng, zoom } = e.detail;
+        this.map.setCenter(lat, lng, zoom || 6);
+      }
+    }) as EventListener);
 
     this.applyPanelSettings();
     this.applyInitialUrlState();

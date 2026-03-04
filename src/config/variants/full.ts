@@ -46,6 +46,18 @@ export const DEFAULT_PANELS: Record<string, PanelConfig> = {
   'etf-flows': { name: 'BTC ETF Tracker', enabled: true, priority: 2 },
   stablecoins: { name: 'Stablecoins', enabled: true, priority: 2 },
   monitors: { name: 'My Monitors', enabled: true, priority: 2 },
+  sports: { name: 'Live Sports', enabled: true, priority: 1 },
+
+  'tech-events': { name: 'Tech Events', enabled: true, priority: 2 },
+  'tech-hubs': { name: 'Tech Hubs', enabled: true, priority: 2 },
+  'sports-tv': { name: 'Sports TV', enabled: true, priority: 2 },
+  radio: { name: 'Radio', enabled: true, priority: 2 },
+  'live-webcams': { name: 'Live Webcams', enabled: true, priority: 2 },
+  'market-radar': { name: 'Market Radar', enabled: true, priority: 1 },
+  'fear-greed': { name: 'Fear & Greed', enabled: true, priority: 1 },
+  'forex-rates': { name: 'Forex Rates', enabled: true, priority: 1 },
+  'defi-tvl': { name: 'DeFi TVL', enabled: true, priority: 2 },
+  'world-clocks': { name: 'World Clocks', enabled: true, priority: 2 },
 };
 
 // Map layers for geopolitical view
@@ -87,6 +99,7 @@ export const DEFAULT_MAP_LAYERS: MapLayers = {
   centralBanks: false,
   commodityHubs: false,
   gulfInvestments: false,
+  sportsMatches: true,
 };
 
 // Mobile-specific defaults for geopolitical
@@ -128,6 +141,7 @@ export const MOBILE_DEFAULT_MAP_LAYERS: MapLayers = {
   centralBanks: false,
   commodityHubs: false,
   gulfInvestments: false,
+  sportsMatches: true,
 };
 
 export const VARIANT_CONFIG: VariantConfig = {
