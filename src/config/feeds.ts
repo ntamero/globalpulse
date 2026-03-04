@@ -883,8 +883,45 @@ const FINANCE_FEEDS: Record<string, Feed[]> = {
   ],
 };
 
+// ============================================
+// SPORTS VARIANT FEEDS
+// ============================================
+const SPORTS_FEEDS: Record<string, Feed[]> = {
+  football: [
+    { name: 'BBC Sport Football', url: rss('https://feeds.bbci.co.uk/sport/football/rss.xml') },
+    { name: 'ESPN FC', url: rss('https://www.espn.com/espn/rss/soccer/news') },
+    { name: 'Sky Sports Football', url: rss('https://news.google.com/rss/search?q=site:skysports.com+football+when:3d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Premier League', url: rss('https://news.google.com/rss/search?q=Premier+League+football+when:3d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Champions League', url: rss('https://news.google.com/rss/search?q=Champions+League+when:3d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'La Liga', url: rss('https://news.google.com/rss/search?q=La+Liga+football+when:3d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Transfers', url: rss('https://news.google.com/rss/search?q=football+transfer+when:3d&hl=en-US&gl=US&ceid=US:en') },
+  ],
+  basketball: [
+    { name: 'BBC Sport Basketball', url: rss('https://news.google.com/rss/search?q=NBA+basketball+when:3d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'ESPN NBA', url: rss('https://www.espn.com/espn/rss/nba/news') },
+    { name: 'NBA News', url: rss('https://news.google.com/rss/search?q=(NBA+OR+basketball)+trade+OR+game+when:3d&hl=en-US&gl=US&ceid=US:en') },
+  ],
+  tennis: [
+    { name: 'Tennis News', url: rss('https://news.google.com/rss/search?q=(tennis+OR+ATP+OR+WTA+OR+Wimbledon+OR+"Australian+Open"+OR+"French+Open"+OR+"US+Open")+when:3d&hl=en-US&gl=US&ceid=US:en') },
+  ],
+  motorsport: [
+    { name: 'Formula 1', url: rss('https://news.google.com/rss/search?q=(Formula+1+OR+F1+OR+"Grand+Prix")+racing+when:3d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'MotoGP', url: rss('https://news.google.com/rss/search?q=MotoGP+when:7d&hl=en-US&gl=US&ceid=US:en') },
+  ],
+  cricket: [
+    { name: 'Cricket', url: rss('https://news.google.com/rss/search?q=(cricket+OR+IPL+OR+ICC+OR+T20+OR+"test+match")+when:3d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'BBC Sport Cricket', url: rss('https://feeds.bbci.co.uk/sport/cricket/rss.xml') },
+  ],
+  general: [
+    { name: 'BBC Sport', url: rss('https://feeds.bbci.co.uk/sport/rss.xml') },
+    { name: 'ESPN', url: rss('https://www.espn.com/espn/rss/news') },
+    { name: 'Sports Breaking', url: rss('https://news.google.com/rss/search?q=sports+breaking+OR+upset+OR+record+when:1d&hl=en-US&gl=US&ceid=US:en') },
+    { name: 'Olympics', url: rss('https://news.google.com/rss/search?q=Olympics+OR+Olympic+athlete+when:7d&hl=en-US&gl=US&ceid=US:en') },
+  ],
+};
+
 // Variant-aware exports
-export const FEEDS = SITE_VARIANT === 'tech' ? TECH_FEEDS : SITE_VARIANT === 'finance' ? FINANCE_FEEDS : FULL_FEEDS;
+export const FEEDS = SITE_VARIANT === 'tech' ? TECH_FEEDS : SITE_VARIANT === 'finance' ? FINANCE_FEEDS : SITE_VARIANT === 'sports' ? SPORTS_FEEDS : FULL_FEEDS;
 
 export const INTEL_SOURCES: Feed[] = [
   // Defense & Security (Tier 1)

@@ -554,6 +554,8 @@ export interface MapLayers {
   commodityHubs: boolean;
   // Gulf FDI layers
   gulfInvestments: boolean;
+  // Sports variant layers
+  sportsMatches: boolean;
 }
 
 export interface AIDataCenter {

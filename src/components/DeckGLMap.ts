@@ -257,6 +257,7 @@ export class DeckGLMap {
   private naturalEvents: NaturalEvent[] = [];
   private firmsFireData: Array<{ lat: number; lon: number; brightness: number; frp: number; confidence: number; region: string; acq_date: string; daynight: string }> = [];
   private techEvents: TechEventMarker[] = [];
+  private sportsMatches: import('./MapContainer').SportsMatchMarker[] = [];
   private flightDelays: AirportDelayAlert[] = [];
   private news: NewsItem[] = [];
   private newsLocations: Array<{ lat: number; lon: number; title: string; threatLevel: string; timestamp?: Date }> = [];
@@ -1124,6 +1125,11 @@ export class DeckGLMap {
       if (mapLayers.techEvents && this.techEvents.length > 0) {
         layers.push(...this.createTechEventClusterLayers());
       }
+    }
+
+    // Sports matches layer
+    if (mapLayers.sportsMatches && this.sportsMatches.length > 0) {
+      layers.push(...this.createSportsMatchLayers());
     }
 
     // Gulf FDI investments layer
@@ -2019,6 +2025,78 @@ export class DeckGLMap {
         fontFamily: 'system-ui, sans-serif',
         fontWeight: 700,
       }));
+    }
+
+    return layers;
+  }
+
+  private createSportsMatchLayers(): Layer[] {
+    type SM = import('./MapContainer').SportsMatchMarker;
+    const layers: Layer[] = [];
+    const liveMatches = this.sportsMatches.filter(m => m.status === 'live');
+    const otherMatches = this.sportsMatches.filter(m => m.status !== 'live');
+
+    // Live matches: pulsing red circles
+    if (liveMatches.length > 0) {
+      layers.push(new ScatterplotLayer<SM>({
+        id: 'sports-live-layer',
+        data: liveMatches,
+        getPosition: d => [d.lng, d.lat],
+        getRadius: 18000,
+        radiusMinPixels: 8,
+        radiusMaxPixels: 22,
+        getFillColor: [239, 68, 68, 200],
+        getLineColor: [255, 100, 100, 255],
+        lineWidthMinPixels: 2,
+        stroked: true,
+        pickable: true,
+        onClick: (info) => {
+          if (info.object) {
+            this.popup.show({ type: 'sportsMatch', data: info.object, x: info.x, y: info.y });
+          }
+        },
+      }));
+      // Ghost layer for easier picking
+      layers.push(this.createGhostLayer('sports-live-layer', liveMatches, (d: SM) => [d.lng, d.lat], { radiusMinPixels: 16 }));
+
+      // Score labels for live
+      layers.push(new TextLayer<SM>({
+        id: 'sports-live-labels',
+        data: liveMatches,
+        getText: d => `${d.homeAbbr} ${d.score} ${d.awayAbbr}`,
+        getPosition: d => [d.lng, d.lat],
+        background: true,
+        getBackgroundColor: [220, 38, 38, 220],
+        backgroundPadding: [6, 2, 6, 2],
+        getColor: [255, 255, 255, 255],
+        getSize: 11,
+        getPixelOffset: [0, -18],
+        pickable: false,
+        fontFamily: 'system-ui, sans-serif',
+        fontWeight: 700,
+      }));
+    }
+
+    // Upcoming + finished: smaller blue/gray dots
+    if (otherMatches.length > 0) {
+      layers.push(new ScatterplotLayer<SM>({
+        id: 'sports-other-layer',
+        data: otherMatches,
+        getPosition: d => [d.lng, d.lat],
+        getRadius: 12000,
+        radiusMinPixels: 5,
+        radiusMaxPixels: 14,
+        getFillColor: d => d.status === 'upcoming'
+          ? [59, 130, 246, 160] as [number, number, number, number]
+          : [156, 163, 175, 140] as [number, number, number, number],
+        pickable: true,
+        onClick: (info) => {
+          if (info.object) {
+            this.popup.show({ type: 'sportsMatch', data: info.object, x: info.x, y: info.y });
+          }
+        },
+      }));
+      layers.push(this.createGhostLayer('sports-other-layer', otherMatches, (d: SM) => [d.lng, d.lat], { radiusMinPixels: 14 }));
     }
 
     return layers;
@@ -3288,6 +3366,11 @@ export class DeckGLMap {
   public setTechEvents(events: TechEventMarker[]): void {
     this.techEvents = events;
     this.rebuildTechEventSupercluster();
+    this.render();
+  }
+
+  public setSportsMatches(matches: import('./MapContainer').SportsMatchMarker[]): void {
+    this.sportsMatches = matches;
     this.render();
   }
 

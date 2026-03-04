@@ -89,6 +89,7 @@
     "filterSources": "Filtrar fuentes...",
     "sourcesEnabled": "{{enabled}}/{{total}} habilitado",
     "finance": "FINANCE",
+    "sports": "DEPORTES",
     "toggleTheme": "Alternar modo oscuro/claro"
   },
   "panels": {

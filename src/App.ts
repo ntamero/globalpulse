@@ -2081,63 +2081,54 @@ export class App {
     this.currentTimeRange = this.map.getTimeRange();
 
     // ── Finance Dashboard Mode ──
-    // When finance variant is active, replace standard panel grid with FinanceDashboard
+    // When finance variant is active, show XED panels + FinanceDashboard
     if (SITE_VARIANT === 'finance') {
-      // Hide map section for finance dashboard
       const mapSection = document.getElementById('mapSection');
       if (mapSection) mapSection.style.display = 'none';
 
-      // XED-style compact finance widgets ABOVE the dashboard
-      const xedGrid = document.createElement('div');
-      xedGrid.className = 'xed-finance-grid';
+      // XED finance panels as standard grid items (same layout as main page)
+      this.panels['market-radar'] = new MarketRadarPanel();
+      panelsGrid.appendChild(this.panels['market-radar'].getElement());
 
-      const xedPanels: Array<{key: string, panel: Panel}> = [
-        { key: 'market-radar', panel: new MarketRadarPanel() },
-        { key: 'fear-greed', panel: new FearGreedPanel() },
-        { key: 'forex-rates', panel: new ForexPanel() },
-        { key: 'defi-tvl', panel: new DefiTVLPanel() },
-        { key: 'world-clocks', panel: new WorldClocksPanel() },
-      ];
+      this.panels['fear-greed'] = new FearGreedPanel();
+      panelsGrid.appendChild(this.panels['fear-greed'].getElement());
 
-      for (const { key, panel } of xedPanels) {
-        this.panels[key] = panel;
-        const el = panel.getElement();
-        el.classList.add('xed-compact');
-        xedGrid.appendChild(el);
-      }
+      this.panels['forex-rates'] = new ForexPanel();
+      panelsGrid.appendChild(this.panels['forex-rates'].getElement());
 
-      panelsGrid.appendChild(xedGrid);
+      this.panels['defi-tvl'] = new DefiTVLPanel();
+      panelsGrid.appendChild(this.panels['defi-tvl'].getElement());
 
-      // Main FinanceDashboard (TradingView widgets, TV, heatmap etc.)
+      this.panels['world-clocks'] = new WorldClocksPanel();
+      panelsGrid.appendChild(this.panels['world-clocks'].getElement());
+
+      // FinanceDashboard in a full-width wrapper (so it doesn't wipe panelsGrid)
+      const fdWrapper = document.createElement('div');
+      fdWrapper.style.gridColumn = '1 / -1';
+      panelsGrid.appendChild(fdWrapper);
+
       this.financeDashboard = new FinanceDashboard();
-      this.financeDashboard.mount(panelsGrid);
+      this.financeDashboard.mount(fdWrapper);
 
       return; // Skip standard panel creation
     }
 
     // ── Sports Dashboard Mode ──
-    // When sports variant is active, show compact sports grid
+    // When sports variant is active, show sport panels in standard grid layout
     if (SITE_VARIANT === 'sports') {
-      // Sports TV Panel at top (full width)
+      // Sports TV Panel
       const sportsTVPanel = new SportsTVPanel();
       this.panels['sports-tv'] = sportsTVPanel;
       panelsGrid.appendChild(sportsTVPanel.getElement());
 
-      // Compact sports grid - 5 sport panels in a row
-      const sportsGrid = document.createElement('div');
-      sportsGrid.className = 'xed-sports-grid';
-
+      // Per-sport panels in standard grid (same layout as main page)
       const sportPanels: SportPanel[] = [];
       for (const config of SPORT_CONFIGS) {
         const panel = new SportPanel(config);
         this.panels[`sport-${config.id}`] = panel;
         sportPanels.push(panel);
-        const el = panel.getElement();
-        el.classList.add('xed-compact');
-        sportsGrid.appendChild(el);
+        panelsGrid.appendChild(panel.getElement());
       }
-
-      panelsGrid.appendChild(sportsGrid);
 
       // Aggregate map markers from all sport panels
       const allSportMarkers = new Map<string, unknown[]>();

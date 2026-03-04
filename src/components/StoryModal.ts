@@ -122,7 +122,7 @@ async function shareWhatsApp(data: StoryData): Promise<void> {
     return;
   }
 
-  const file = new File([currentBlob], `${data.countryCode.toLowerCase()}-worldmonitor.png`, { type: 'image/png' });
+  const file = new File([currentBlob], `${data.countryCode.toLowerCase()}-globalscope.png`, { type: 'image/png' });
   const urls = getShareUrls(data);
 
   if (navigator.share && navigator.canShare?.({ files: [file] })) {

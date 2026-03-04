@@ -1554,6 +1554,7 @@
     "filterSources": "Bronnen filteren...",
     "sourcesEnabled": "{{enabled}}/{{total}} ingeschakeld",
     "finance": "FINANCE",
+    "sports": "SPORT",
     "toggleTheme": "Schakel tussen de donkere/lichte modus"
   },
   "app": {

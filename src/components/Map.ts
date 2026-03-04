@@ -128,6 +128,7 @@ export class MapComponent {
   private naturalEvents: NaturalEvent[] = [];
   private firmsFireData: Array<{ lat: number; lon: number; brightness: number; frp: number; confidence: number; region: string; acq_date: string; daynight: string }> = [];
   private techEvents: TechEventMarker[] = [];
+  private sportsMatches: import('./MapContainer').SportsMatchMarker[] = [];
   private techActivities: TechHubActivity[] = [];
   private geoActivities: GeoHubActivity[] = [];
   private news: NewsItem[] = [];
@@ -1967,6 +1968,46 @@ export class MapComponent {
       });
     }
 
+    // Sports Matches (⚽🏀🎾🏎️🏏 icons)
+    if (this.state.layers.sportsMatches && this.sportsMatches.length > 0) {
+      const sportIcons: Record<string, string> = { soccer: '⚽', basketball: '🏀', tennis: '🎾', racing: '🏎️', cricket: '🏏', football: '🏈', baseball: '⚾', hockey: '🏒' };
+      this.sportsMatches.forEach((match) => {
+        const pos = projection([match.lng, match.lat]);
+        if (!pos || !Number.isFinite(pos[0]) || !Number.isFinite(pos[1])) return;
+
+        const icon = sportIcons[match.sport] || '⚽';
+        const isLive = match.status === 'live';
+        const div = document.createElement('div');
+        div.className = `sports-match-marker ${match.status}`;
+        div.style.left = `${pos[0]}px`;
+        div.style.top = `${pos[1]}px`;
+        div.style.zIndex = isLive ? '60' : '45';
+        div.innerHTML = `<span class="smm-icon">${icon}</span>`;
+
+        if (this.state.zoom >= 3) {
+          const label = document.createElement('div');
+          label.className = 'smm-score-label';
+          label.textContent = `${match.homeAbbr} ${match.score} ${match.awayAbbr}`;
+          div.appendChild(label);
+        }
+
+        div.title = `${match.homeTeam} ${match.score} ${match.awayTeam} — ${match.statusDetail}`;
+
+        div.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const rect = this.container.getBoundingClientRect();
+          this.popup.show({
+            type: 'sportsMatch',
+            data: match,
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top,
+          });
+        });
+
+        this.overlays.appendChild(div);
+      });
+    }
+
     // Stock Exchanges (🏛️ icon by tier)
     if (this.state.layers.stockExchanges) {
       STOCK_EXCHANGES.forEach((exchange) => {
@@ -3439,6 +3480,11 @@ export class MapComponent {
 
   public setTechEvents(events: TechEventMarker[]): void {
     this.techEvents = events;
+    this.render();
+  }
+
+  public setSportsMatches(matches: import('./MapContainer').SportsMatchMarker[]): void {
+    this.sportsMatches = matches;
     this.render();
   }
 

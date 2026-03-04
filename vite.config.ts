@@ -90,6 +90,29 @@ const VARIANT_META: Record<string, {
       'Market radar signals',
     ],
   },
+  sports: {
+    title: 'GlobalScope Sports - Live Scores, News & Sports Intelligence',
+    description: 'Real-time sports dashboard with live scores, match tracking on a world map, sports news, league standings, AI predictions, and live sports TV channels worldwide.',
+    keywords: 'sports dashboard, live scores, football, basketball, tennis, F1, cricket, premier league, NBA, champions league, match predictions, sports news, league standings, sports TV',
+    url: 'https://globalscope.live/',
+    siteName: 'GlobalScope Sports',
+    shortName: 'SportsScope',
+    subject: 'Global Sports, Live Scores, and Sports Intelligence',
+    classification: 'Sports Dashboard, Live Scores, Sports Tracker',
+    categories: ['sports', 'news'],
+    features: [
+      'Live score tracking on world map',
+      'Real-time match updates',
+      'Multi-sport coverage',
+      'League standings',
+      'AI match predictions',
+      'Sports TV channels',
+      'Breaking sports news',
+      'Match schedule & fixtures',
+      'Stadium locations on map',
+      'Sports analytics',
+    ],
+  },
 };
 
 const activeVariant = process.env.VITE_VARIANT || 'full';

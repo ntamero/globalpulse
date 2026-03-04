@@ -1554,6 +1554,7 @@
     "filterSources": "Filtrar fontes...",
     "sourcesEnabled": "{{enabled}}/{{total}} ativado",
     "finance": "FINANCE",
+    "sports": "ESPORTES",
     "toggleTheme": "Alternar modo claro/escuro"
   },
   "app": {

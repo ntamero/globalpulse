@@ -42,6 +42,25 @@ export interface MapContainerState {
   timeRange: TimeRange;
 }
 
+export interface SportsMatchMarker {
+  id: string;
+  homeTeam: string;
+  awayTeam: string;
+  homeAbbr: string;
+  awayAbbr: string;
+  homeLogo: string;
+  awayLogo: string;
+  score: string;
+  status: 'live' | 'upcoming' | 'finished';
+  statusDetail: string;
+  league: string;
+  leagueAbbr: string;
+  venue: string;
+  lat: number;
+  lng: number;
+  sport: string;
+}
+
 interface TechEventMarker {
   id: string;
   title: string;
@@ -269,6 +288,14 @@ export class MapContainer {
       this.deckGLMap?.setTechEvents(events);
     } else {
       this.svgMap?.setTechEvents(events);
+    }
+  }
+
+  public setSportsMatches(matches: SportsMatchMarker[]): void {
+    if (this.useDeckGL) {
+      this.deckGLMap?.setSportsMatches(matches);
+    } else {
+      this.svgMap?.setSportsMatches(matches);
     }
   }
 

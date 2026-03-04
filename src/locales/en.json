@@ -66,6 +66,7 @@
     "filterSources": "Filter sources...",
     "sourcesEnabled": "{{enabled}}/{{total}} enabled",
     "finance": "FINANCE",
+    "sports": "SPORTS",
     "toggleTheme": "Toggle dark/light mode"
   },
   "panels": {

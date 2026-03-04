@@ -1531,6 +1531,7 @@
     "filterSources": "Filtrera källor...",
     "sourcesEnabled": "{{enabled}}/{{total}} aktiverad",
     "finance": "FINANCE",
+    "sports": "SPORT",
     "toggleTheme": "Växla mellan mörkt/ljusläge"
   },
   "app": {

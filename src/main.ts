@@ -106,6 +106,71 @@ app
   })
   .catch(console.error);
 
+// ─── Global Article Click Interceptor ──────────────────────────────────────
+// Catches clicks on external news links across ALL panels and opens them
+// in the ArticleOverlay instead of navigating away from the page.
+{
+  const SKIP_DOMAINS = new Set([
+    'youtube.com', 'www.youtube.com', 'youtu.be',
+    'tradingview.com', 'www.tradingview.com', 's.tradingview.com',
+    'twitter.com', 'x.com', 'stocktwits.com', 'www.stocktwits.com',
+    'globalscope.live', 'localhost',
+  ]);
+
+  const SKIP_SELECTORS = [
+    '.article-overlay',       // Already inside overlay
+    '.article-overlay-external', // "Open in new tab" button inside overlay
+    '.radio-station',         // Radio player links
+    '.community-link',        // Community/social links
+    '.tv-channel',            // TV channel embeds
+  ];
+
+  document.addEventListener('click', (e: MouseEvent) => {
+    // Allow ctrl+click / cmd+click / middle-click for native new tab
+    if (e.ctrlKey || e.metaKey || e.button === 1) return;
+
+    const anchor = (e.target as HTMLElement).closest('a[href]') as HTMLAnchorElement | null;
+    if (!anchor) return;
+
+    const href = anchor.getAttribute('href') || '';
+    // Skip hash-only, javascript:, mailto:, empty
+    if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:')) return;
+
+    // Must be inside a .panel or .finance-dashboard container (not random page links)
+    if (!anchor.closest('.panel, .finance-dashboard, .country-intel-modal, .insights-panel')) return;
+
+    // Skip if matched by any skip selector
+    if (SKIP_SELECTORS.some(sel => anchor.closest(sel) || anchor.matches(sel))) return;
+
+    // Must be external link (target="_blank" or absolute URL)
+    const isExternal = anchor.target === '_blank' || href.startsWith('http');
+    if (!isExternal) return;
+
+    // Skip certain domains
+    try {
+      const url = new URL(href, window.location.origin);
+      const domain = url.hostname.replace(/^www\./, '');
+      if (SKIP_DOMAINS.has(url.hostname) || SKIP_DOMAINS.has(domain)) return;
+    } catch { return; }
+
+    // Intercept! Open in ArticleOverlay
+    e.preventDefault();
+    e.stopPropagation();
+
+    const title = anchor.dataset.articleTitle
+      || anchor.getAttribute('title')
+      || anchor.textContent?.trim()
+      || '';
+    const source = anchor.dataset.articleSource
+      || anchor.closest('[data-source]')?.getAttribute('data-source')
+      || '';
+
+    import('@/components/ArticleOverlay').then(({ ArticleOverlay }) => {
+      ArticleOverlay.show(href, title, source);
+    });
+  }, true); // Use capture phase to intercept before individual handlers
+}
+
 // Debug helpers for geo-convergence testing (remove in production)
 (window as unknown as Record<string, unknown>).geoDebug = {
   inject: debugInjectTestEvents,

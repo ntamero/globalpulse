@@ -89,6 +89,7 @@
     "filterSources": "تصفية المصادر...",
     "sourcesEnabled": "{{enabled}}/{{total}} مفعّلة",
     "finance": "المالية",
+    "sports": "رياضة",
     "toggleTheme": "تبديل الوضع الداكن/الفاتح"
   },
   "panels": {

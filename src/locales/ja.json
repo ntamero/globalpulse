@@ -89,6 +89,7 @@
     "filterSources": "ソースを絞り込み...",
     "sourcesEnabled": "{{enabled}}/{{total}} 有効",
     "finance": "金融",
+    "sports": "スポーツ",
     "toggleTheme": "ダーク/ライトモード切替"
   },
   "panels": {

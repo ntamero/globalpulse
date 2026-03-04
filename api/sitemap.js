@@ -1,15 +1,14 @@
 /**
- * GlobalPulse — Dynamic Sitemap Generator
+ * GlobalScope — Dynamic Sitemap Generator
  *
  * Generates XML sitemap with:
- * - Main dashboard pages
- * - Country intelligence pages
- * - Category pages per variant
+ * - Main dashboard page
+ * - Category landing pages (with trending keywords)
+ * - Country intelligence pages (60 countries)
  *
  * GET /api/sitemap → XML sitemap
  */
 
-// Top 60 countries by geopolitical relevance
 const COUNTRIES = [
   'US', 'CN', 'RU', 'UA', 'GB', 'DE', 'FR', 'JP', 'IN', 'BR',
   'KR', 'IL', 'IR', 'SA', 'TR', 'PK', 'EG', 'NG', 'ZA', 'AU',
@@ -34,32 +33,50 @@ const COUNTRY_NAMES = {
   BE: 'Belgium', CH: 'Switzerland', AT: 'Austria', NZ: 'New Zealand', MM: 'Myanmar',
 };
 
-const BASE_URL = 'http://46.62.167.252';
+const BASE_URL = 'https://globalscope.live';
 
 export default function handler(req) {
-  const now = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+  const now = new Date();
+  const todayISO = now.toISOString().split('T')[0];
+
+  // Get SEO state for dynamic lastmod
+  const seoState = globalThis.__seoState;
+  const categoryMeta = globalThis.__seoCategoryMeta || {};
+  const categories = globalThis.__seoCategories || [];
 
   let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
   <!-- Main Dashboard -->
   <url>
     <loc>${BASE_URL}/</loc>
-    <lastmod>${now}</lastmod>
+    <lastmod>${seoState?.lastUpdate ? new Date(seoState.lastUpdate).toISOString().split('T')[0] : todayISO}</lastmod>
     <changefreq>always</changefreq>
     <priority>1.0</priority>
   </url>
+`;
 
-  <!-- Settings -->
+  // Category landing pages
+  for (const cat of categories) {
+    const meta = categoryMeta[cat];
+    if (!meta) continue;
+
+    const catState = seoState?.categories?.[cat];
+    const lastmod = catState?.lastUpdate
+      ? new Date(catState.lastUpdate).toISOString().split('T')[0]
+      : todayISO;
+
+    xml += `
+  <!-- ${meta.title} -->
   <url>
-    <loc>${BASE_URL}/settings</loc>
-    <lastmod>${now}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
+    <loc>${BASE_URL}/t/${cat}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.9</priority>
   </url>
 `;
+  }
 
   // Country intelligence pages
   for (const code of COUNTRIES) {
@@ -68,7 +85,7 @@ export default function handler(req) {
   <!-- ${name} Intelligence -->
   <url>
     <loc>${BASE_URL}/api/story?c=${code}&amp;t=ciianalysis</loc>
-    <lastmod>${now}</lastmod>
+    <lastmod>${todayISO}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>

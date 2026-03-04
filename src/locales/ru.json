@@ -89,6 +89,7 @@
     "filterSources": "Фильтр источников...",
     "sourcesEnabled": "{{enabled}}/{{total}} включено",
     "finance": "ФИНАНСЫ",
+    "sports": "СПОРТ",
     "toggleTheme": "Переключить тёмную/светлую тему"
   },
   "panels": {

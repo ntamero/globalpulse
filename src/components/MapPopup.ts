@@ -11,7 +11,7 @@ import { fetchHotspotContext, formatArticleDate, extractDomain, type GdeltArticl
 import { getNaturalEventIcon } from '@/services/eonet';
 import { getHotspotEscalation, getEscalationChange24h } from '@/services/hotspot-escalation';
 
-export type PopupType = 'conflict' | 'hotspot' | 'earthquake' | 'weather' | 'base' | 'waterway' | 'apt' | 'cyberThreat' | 'nuclear' | 'economic' | 'irradiator' | 'pipeline' | 'cable' | 'cable-advisory' | 'repair-ship' | 'outage' | 'datacenter' | 'datacenterCluster' | 'ais' | 'protest' | 'protestCluster' | 'flight' | 'militaryFlight' | 'militaryVessel' | 'militaryFlightCluster' | 'militaryVesselCluster' | 'natEvent' | 'port' | 'spaceport' | 'mineral' | 'startupHub' | 'cloudRegion' | 'techHQ' | 'accelerator' | 'techEvent' | 'techHQCluster' | 'techEventCluster' | 'techActivity' | 'geoActivity' | 'stockExchange' | 'financialCenter' | 'centralBank' | 'commodityHub';
+export type PopupType = 'conflict' | 'hotspot' | 'earthquake' | 'weather' | 'base' | 'waterway' | 'apt' | 'cyberThreat' | 'nuclear' | 'economic' | 'irradiator' | 'pipeline' | 'cable' | 'cable-advisory' | 'repair-ship' | 'outage' | 'datacenter' | 'datacenterCluster' | 'ais' | 'protest' | 'protestCluster' | 'flight' | 'militaryFlight' | 'militaryVessel' | 'militaryFlightCluster' | 'militaryVesselCluster' | 'natEvent' | 'port' | 'spaceport' | 'mineral' | 'startupHub' | 'cloudRegion' | 'techHQ' | 'accelerator' | 'techEvent' | 'techHQCluster' | 'techEventCluster' | 'techActivity' | 'geoActivity' | 'stockExchange' | 'financialCenter' | 'centralBank' | 'commodityHub' | 'sportsMatch';
 
 interface TechEventPopupData {
   id: string;
@@ -117,7 +117,7 @@ interface DatacenterClusterData {
 
 interface PopupData {
   type: PopupType;
-  data: ConflictZone | Hotspot | Earthquake | WeatherAlert | MilitaryBase | StrategicWaterway | APTGroup | CyberThreat | NuclearFacility | EconomicCenter | GammaIrradiator | Pipeline | UnderseaCable | CableAdvisory | RepairShip | InternetOutage | AIDataCenter | AisDisruptionEvent | SocialUnrestEvent | AirportDelayAlert | MilitaryFlight | MilitaryVessel | MilitaryFlightCluster | MilitaryVesselCluster | NaturalEvent | Port | Spaceport | CriticalMineralProject | StartupHub | CloudRegion | TechHQ | Accelerator | TechEventPopupData | TechHQClusterData | TechEventClusterData | ProtestClusterData | DatacenterClusterData | TechHubActivity | GeoHubActivity | StockExchangePopupData | FinancialCenterPopupData | CentralBankPopupData | CommodityHubPopupData;
+  data: ConflictZone | Hotspot | Earthquake | WeatherAlert | MilitaryBase | StrategicWaterway | APTGroup | CyberThreat | NuclearFacility | EconomicCenter | GammaIrradiator | Pipeline | UnderseaCable | CableAdvisory | RepairShip | InternetOutage | AIDataCenter | AisDisruptionEvent | SocialUnrestEvent | AirportDelayAlert | MilitaryFlight | MilitaryVessel | MilitaryFlightCluster | MilitaryVesselCluster | NaturalEvent | Port | Spaceport | CriticalMineralProject | StartupHub | CloudRegion | TechHQ | Accelerator | TechEventPopupData | TechHQClusterData | TechEventClusterData | ProtestClusterData | DatacenterClusterData | TechHubActivity | GeoHubActivity | StockExchangePopupData | FinancialCenterPopupData | CentralBankPopupData | CommodityHubPopupData | import('./MapContainer').SportsMatchMarker;
   relatedNews?: NewsItem[];
   x: number;
   y: number;
@@ -418,6 +418,8 @@ export class MapPopup {
         return this.renderCentralBankPopup(data.data as CentralBankPopupData);
       case 'commodityHub':
         return this.renderCommodityHubPopup(data.data as CommodityHubPopupData);
+      case 'sportsMatch':
+        return this.renderSportsMatchPopup(data.data as import('./MapContainer').SportsMatchMarker);
       default:
         return '';
     }
@@ -2486,6 +2488,46 @@ export class MapPopup {
           </div>
         ` : ''}
         ${hub.description ? `<p class="popup-description">${escapeHtml(hub.description)}</p>` : ''}
+      </div>
+    `;
+  }
+
+  private renderSportsMatchPopup(match: import('./MapContainer').SportsMatchMarker): string {
+    const sportIcons: Record<string, string> = { soccer: '⚽', basketball: '🏀', tennis: '🎾', racing: '🏎️', cricket: '🏏', football: '🏈', baseball: '⚾', hockey: '🏒' };
+    const icon = sportIcons[match.sport] || '⚽';
+    const isLive = match.status === 'live';
+    const statusClass = isLive ? 'live' : match.status === 'upcoming' ? 'upcoming' : 'finished';
+
+    return `
+      <div class="popup-header sports-match ${statusClass}">
+        <span class="popup-title">${icon} ${escapeHtml(match.league)}</span>
+        <span class="popup-badge ${statusClass}">${isLive ? '🔴 LIVE ' : ''}${escapeHtml(match.statusDetail)}</span>
+        <button class="popup-close">×</button>
+      </div>
+      <div class="popup-body">
+        <div class="sports-popup-teams">
+          <div class="sports-popup-team ${match.status === 'finished' && (match.score.split('-')[0]?.trim() ?? '') > (match.score.split('-')[1]?.trim() ?? '') ? 'winner' : ''}">
+            ${match.homeLogo ? `<img src="${escapeHtml(match.homeLogo)}" alt="" class="sports-popup-logo" />` : ''}
+            <span class="sports-popup-name">${escapeHtml(match.homeTeam)}</span>
+            <span class="sports-popup-score">${escapeHtml(match.score.split('-')[0]?.trim() ?? match.score.split('vs')[0]?.trim() ?? '')}</span>
+          </div>
+          <div class="sports-popup-team ${match.status === 'finished' && (match.score.split('-')[1]?.trim() ?? '') > (match.score.split('-')[0]?.trim() ?? '') ? 'winner' : ''}">
+            ${match.awayLogo ? `<img src="${escapeHtml(match.awayLogo)}" alt="" class="sports-popup-logo" />` : ''}
+            <span class="sports-popup-name">${escapeHtml(match.awayTeam)}</span>
+            <span class="sports-popup-score">${escapeHtml(match.score.split('-')[1]?.trim() ?? match.score.split('vs')[1]?.trim() ?? '')}</span>
+          </div>
+        </div>
+        <div class="popup-stats">
+          ${match.venue ? `
+          <div class="popup-stat">
+            <span class="stat-label">📍 Stadium</span>
+            <span class="stat-value">${escapeHtml(match.venue)}</span>
+          </div>` : ''}
+          <div class="popup-stat">
+            <span class="stat-label">🏆 League</span>
+            <span class="stat-value">${escapeHtml(match.leagueAbbr || match.league)}</span>
+          </div>
+        </div>
       </div>
     `;
   }

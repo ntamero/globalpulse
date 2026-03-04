@@ -3,15 +3,21 @@
 
 User-agent: *
 Allow: /
+Allow: /t/
 Allow: /api/story
+Allow: /api/feed
+Allow: /api/sitemap
+Allow: /api/news-sitemap
+Allow: /api/category-sitemap
 Disallow: /api/
 Disallow: /rss/
 Disallow: /ws/
 Disallow: /settings
 
 # Sitemaps
-Sitemap: https://globalscope.live/sitemap.xml
-Sitemap: https://globalscope.live/news-sitemap.xml
+Sitemap: https://globalscope.live/api/sitemap
+Sitemap: https://globalscope.live/api/news-sitemap
+Sitemap: https://globalscope.live/api/category-sitemap
 
 # Crawl rate
 Crawl-delay: 2

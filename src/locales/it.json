@@ -89,6 +89,7 @@
     "filterSources": "Filtra fonti...",
     "sourcesEnabled": "{{enabled}}/{{total}} abilitate",
     "finance": "FINANZA",
+    "sports": "SPORT",
     "toggleTheme": "Attiva/disattiva tema chiaro/scuro"
   },
   "panels": {

@@ -89,6 +89,7 @@
     "filterSources": "Quellen filtern...",
     "sourcesEnabled": "{{enabled}}/{{total}} aktiviert",
     "finance": "FINANCE",
+    "sports": "SPORT",
     "toggleTheme": "Schalten Sie den Dunkel-/Hellmodus um"
   },
   "panels": {

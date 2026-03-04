@@ -89,6 +89,7 @@
     "filterSources": "筛选数据源...",
     "sourcesEnabled": "已启用{{enabled}}/{{total}}",
     "finance": "金融",
+    "sports": "体育",
     "toggleTheme": "切换深色/浅色模式"
   },
   "panels": {

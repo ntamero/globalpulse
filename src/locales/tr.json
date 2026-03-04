@@ -89,6 +89,7 @@
     "filterSources": "Kaynaklari filtrele...",
     "sourcesEnabled": "{{enabled}}/{{total}} aktif",
     "finance": "FINANS",
+    "sports": "SPOR",
     "toggleTheme": "Koyu/acik tema degistir"
   },
   "panels": {
