@@ -17297,3 +17297,319 @@ body.has-critical-banner .panels-grid {
   font-size: 12px;
   font-variant-numeric: tabular-nums;
 }
+
+/* ============================================
+   XED Finance Compact Grid
+   ============================================ */
+.xed-finance-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.xed-finance-grid .panel.xed-compact {
+  max-height: 420px;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(18, 20, 28, 0.85);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+
+.xed-finance-grid .panel.xed-compact .panel-header {
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  min-height: 32px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.xed-finance-grid .panel.xed-compact .panel-header h3 {
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.xed-finance-grid .panel.xed-compact .panel-content {
+  padding: 6px 10px;
+  max-height: 370px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Market Radar compact */
+.xed-finance-grid .market-radar-panel .panel-content {
+  padding: 4px 8px;
+}
+.xed-finance-grid .market-radar-header {
+  padding: 4px 0;
+  margin-bottom: 4px;
+}
+.xed-finance-grid .market-radar-filters {
+  gap: 4px;
+  margin-bottom: 6px;
+}
+.xed-finance-grid .market-radar-filters button {
+  padding: 2px 8px;
+  font-size: 0.65rem;
+}
+.xed-finance-grid .market-radar-list {
+  gap: 3px;
+}
+.xed-finance-grid .market-radar-item {
+  padding: 5px 8px;
+  font-size: 0.72rem;
+}
+.xed-finance-grid .market-radar-item .mr-name {
+  font-size: 0.72rem;
+}
+.xed-finance-grid .market-radar-item .mr-price {
+  font-size: 0.75rem;
+}
+.xed-finance-grid .market-radar-item .mr-change {
+  font-size: 0.65rem;
+  padding: 1px 5px;
+}
+.xed-finance-grid .market-radar-sparkline {
+  height: 20px;
+}
+
+/* Fear & Greed compact */
+.xed-finance-grid .fear-greed-panel .fg-gauge-container {
+  height: 100px;
+  margin: 4px 0;
+}
+.xed-finance-grid .fear-greed-panel .fg-value {
+  font-size: 1.8rem;
+}
+.xed-finance-grid .fear-greed-panel .fg-label {
+  font-size: 0.75rem;
+}
+.xed-finance-grid .fear-greed-panel .fg-history {
+  gap: 4px;
+  margin-top: 6px;
+}
+.xed-finance-grid .fear-greed-panel .fg-history-item {
+  padding: 3px 6px;
+  font-size: 0.65rem;
+}
+
+/* Forex compact */
+.xed-finance-grid .forex-panel .forex-pair {
+  padding: 4px 8px;
+  font-size: 0.72rem;
+}
+.xed-finance-grid .forex-panel .forex-pair .pair-name {
+  font-size: 0.72rem;
+}
+.xed-finance-grid .forex-panel .forex-pair .pair-rate {
+  font-size: 0.75rem;
+}
+.xed-finance-grid .forex-panel .forex-pair .pair-change {
+  font-size: 0.65rem;
+}
+
+/* DeFi TVL compact */
+.xed-finance-grid .defi-tvl-panel .defi-chain {
+  padding: 4px 8px;
+  font-size: 0.72rem;
+}
+.xed-finance-grid .defi-tvl-panel .defi-chain .chain-name {
+  font-size: 0.72rem;
+}
+.xed-finance-grid .defi-tvl-panel .defi-chain .chain-tvl {
+  font-size: 0.75rem;
+}
+
+/* World Clocks compact */
+.xed-finance-grid .world-clocks-panel .clock-grid {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  padding: 4px;
+}
+.xed-finance-grid .world-clocks-panel .clock-item {
+  padding: 6px 4px;
+  font-size: 0.65rem;
+}
+.xed-finance-grid .world-clocks-panel .clock-item .clock-time {
+  font-size: 0.85rem;
+}
+.xed-finance-grid .world-clocks-panel .clock-item .clock-city {
+  font-size: 0.6rem;
+}
+.xed-finance-grid .world-clocks-panel .clock-item .clock-status {
+  font-size: 0.55rem;
+}
+
+/* Responsive: 2 cols on medium, 1 col on small */
+@media (max-width: 1200px) {
+  .xed-finance-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 768px) {
+  .xed-finance-grid {
+    grid-template-columns: 1fr;
+  }
+  .xed-finance-grid .panel.xed-compact {
+    max-height: 350px;
+  }
+}
+
+/* Light theme */
+[data-theme=light] .xed-finance-grid .panel.xed-compact {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+
+/* ============================================
+   XED Sports Compact Grid
+   ============================================ */
+.xed-sports-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  padding: 12px;
+  width: 100%;
+}
+
+.xed-sports-grid .panel.xed-compact {
+  max-height: 500px;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(18, 20, 28, 0.85);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+
+.xed-sports-grid .panel.xed-compact .panel-header {
+  padding: 6px 10px;
+  font-size: 0.75rem;
+  min-height: 30px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.xed-sports-grid .panel.xed-compact .panel-header h3 {
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+.xed-sports-grid .panel.xed-compact .panel-content {
+  padding: 4px 8px;
+  max-height: 450px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  font-size: 0.72rem;
+}
+
+/* Sport panel compact - league tabs */
+.xed-sports-grid .sport-leagues {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-bottom: 6px;
+  padding: 4px 0;
+}
+.xed-sports-grid .sport-leagues button {
+  padding: 2px 6px;
+  font-size: 0.6rem;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.xed-sports-grid .sport-leagues button.active {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #10b981;
+}
+
+/* Sport panel compact - match cards */
+.xed-sports-grid .sport-match-card {
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.04);
+  font-size: 0.68rem;
+}
+.xed-sports-grid .sport-match-card .match-teams {
+  font-size: 0.7rem;
+}
+.xed-sports-grid .sport-match-card .match-score {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.xed-sports-grid .sport-match-card .match-status {
+  font-size: 0.6rem;
+}
+.xed-sports-grid .sport-match-card .match-venue {
+  font-size: 0.58rem;
+  opacity: 0.5;
+}
+
+/* Sport panel compact - section headers */
+.xed-sports-grid .sport-section-title {
+  font-size: 0.65rem;
+  padding: 4px 0;
+  margin: 4px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Sport panel compact - standings */
+.xed-sports-grid .standings-table {
+  font-size: 0.62rem;
+}
+.xed-sports-grid .standings-table th,
+.xed-sports-grid .standings-table td {
+  padding: 2px 4px;
+}
+
+/* Sport panel compact - predict button */
+.xed-sports-grid .predict-btn {
+  font-size: 0.6rem;
+  padding: 2px 6px;
+}
+
+/* Sport panel view tabs */
+.xed-sports-grid .sport-view-tabs {
+  gap: 3px;
+}
+.xed-sports-grid .sport-view-tabs button {
+  padding: 2px 6px;
+  font-size: 0.6rem;
+}
+
+/* Responsive: 3 on medium, 2 on tablet, 1 on mobile */
+@media (max-width: 1400px) {
+  .xed-sports-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 900px) {
+  .xed-sports-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .xed-sports-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Light theme */
+[data-theme="light"] .xed-sports-grid .panel.xed-compact {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}

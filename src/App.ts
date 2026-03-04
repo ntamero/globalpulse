@@ -2087,48 +2087,57 @@ export class App {
       const mapSection = document.getElementById('mapSection');
       if (mapSection) mapSection.style.display = 'none';
 
+      // XED-style compact finance widgets ABOVE the dashboard
+      const xedGrid = document.createElement('div');
+      xedGrid.className = 'xed-finance-grid';
+
+      const xedPanels: Array<{key: string, panel: Panel}> = [
+        { key: 'market-radar', panel: new MarketRadarPanel() },
+        { key: 'fear-greed', panel: new FearGreedPanel() },
+        { key: 'forex-rates', panel: new ForexPanel() },
+        { key: 'defi-tvl', panel: new DefiTVLPanel() },
+        { key: 'world-clocks', panel: new WorldClocksPanel() },
+      ];
+
+      for (const { key, panel } of xedPanels) {
+        this.panels[key] = panel;
+        const el = panel.getElement();
+        el.classList.add('xed-compact');
+        xedGrid.appendChild(el);
+      }
+
+      panelsGrid.appendChild(xedGrid);
+
+      // Main FinanceDashboard (TradingView widgets, TV, heatmap etc.)
       this.financeDashboard = new FinanceDashboard();
       this.financeDashboard.mount(panelsGrid);
+
       return; // Skip standard panel creation
     }
 
     // ── Sports Dashboard Mode ──
-    // When sports variant is active, show map + per-sport panels
+    // When sports variant is active, show compact sports grid
     if (SITE_VARIANT === 'sports') {
-      // Live News Panel
-      const liveNewsPanel = new LiveNewsPanel();
-      this.panels['live-news'] = liveNewsPanel;
-
-      // Sports TV Panel
+      // Sports TV Panel at top (full width)
       const sportsTVPanel = new SportsTVPanel();
       this.panels['sports-tv'] = sportsTVPanel;
+      panelsGrid.appendChild(sportsTVPanel.getElement());
 
-      // Per-sport panels (Football, Basketball, Tennis, F1, Cricket)
+      // Compact sports grid - 5 sport panels in a row
+      const sportsGrid = document.createElement('div');
+      sportsGrid.className = 'xed-sports-grid';
+
       const sportPanels: SportPanel[] = [];
       for (const config of SPORT_CONFIGS) {
         const panel = new SportPanel(config);
         this.panels[`sport-${config.id}`] = panel;
         sportPanels.push(panel);
+        const el = panel.getElement();
+        el.classList.add('xed-compact');
+        sportsGrid.appendChild(el);
       }
 
-      // Monitor Panel
-      const monitorPanel = new MonitorPanel(this.monitors);
-      this.panels['monitors'] = monitorPanel;
-      monitorPanel.onChanged((monitors) => {
-        this.monitors = monitors;
-        this.loadNews();
-      });
-
-      // Add panels to grid in order
-      const sportsPanelOrder = [
-        'live-news', 'sports-tv',
-        ...SPORT_CONFIGS.map(c => `sport-${c.id}`),
-        'monitors',
-      ];
-      sportsPanelOrder.forEach((key) => {
-        const panel = this.panels[key];
-        if (panel) panelsGrid.appendChild(panel.getElement());
-      });
+      panelsGrid.appendChild(sportsGrid);
 
       // Aggregate map markers from all sport panels
       const allSportMarkers = new Map<string, unknown[]>();
@@ -2404,27 +2413,21 @@ export class App {
     const radioPanel = new RadioPanel();
     this.panels['radio'] = radioPanel;
 
-    // Sports Panel (all variants)
-    const sportsPanel = new SportsPanel();
-    this.panels['sports'] = sportsPanel;
+    // Sports Panel (sports variant only - not in full)
+    // SportsPanel removed from full variant - only available on Sports page
 
-    // Sports TV Panel (all variants)
-    const sportsTVPanel = new SportsTVPanel();
-    this.panels['sports-tv'] = sportsTVPanel;
+    // Sports TV Panel (sports variant only)
+    if (SITE_VARIANT === 'sports') {
+      const sportsTVPanel = new SportsTVPanel();
+      this.panels['sports-tv'] = sportsTVPanel;
+    }
 
-    // Tech Events Panel (all variants)
-    this.panels['events'] = new TechEventsPanel('events');
-    this.panels['tech-events'] = this.panels['events'];
-
-    // Tech Hubs Panel (all variants)
-    this.panels['tech-hubs'] = new TechHubsPanel();
-
-    // XED-style finance panels (all variants)
-    this.panels['market-radar'] = new MarketRadarPanel();
-    this.panels['fear-greed'] = new FearGreedPanel();
-    this.panels['forex-rates'] = new ForexPanel();
-    this.panels['defi-tvl'] = new DefiTVLPanel();
-    this.panels['world-clocks'] = new WorldClocksPanel();
+    // Tech Events & Tech Hubs (tech variant only)
+    if (SITE_VARIANT === 'tech') {
+      this.panels['events'] = new TechEventsPanel('events');
+      this.panels['tech-events'] = this.panels['events'];
+      this.panels['tech-hubs'] = new TechHubsPanel();
+    }
 
     // Service Status Panel (primarily for tech variant)
     const serviceStatusPanel = new ServiceStatusPanel();

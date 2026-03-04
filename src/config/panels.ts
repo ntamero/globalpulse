@@ -37,23 +37,11 @@ const FULL_PANELS: Record<string, PanelConfig> = {
   layoffs: { name: 'Layoffs Tracker', enabled: true, priority: 2 },
   monitors: { name: 'My Monitors', enabled: true, priority: 2 },
   'satellite-fires': { name: 'Fires', enabled: true, priority: 2 },
-  'macro-signals': { name: 'Market Radar', enabled: true, priority: 2 },
-  'etf-flows': { name: 'BTC ETF Tracker', enabled: true, priority: 2 },
-  stablecoins: { name: 'Stablecoins', enabled: true, priority: 2 },
   'ucdp-events': { name: 'UCDP Conflict Events', enabled: true, priority: 2 },
   displacement: { name: 'UNHCR Displacement', enabled: true, priority: 2 },
   climate: { name: 'Climate Anomalies', enabled: true, priority: 2 },
   'population-exposure': { name: 'Population Exposure', enabled: true, priority: 2 },
   radio: { name: 'Live Radio', enabled: true, priority: 2 },
-  sports: { name: 'Sports', enabled: true, priority: 2 },
-  'tech-events': { name: 'Tech Events', enabled: true, priority: 2 },
-  'tech-hubs': { name: 'Tech Hubs', enabled: true, priority: 2 },
-  'sports-tv': { name: 'Sports TV', enabled: true, priority: 2 },
-  'market-radar': { name: 'Market Radar', enabled: true, priority: 1 },
-  'fear-greed': { name: 'Fear & Greed', enabled: true, priority: 1 },
-  'forex-rates': { name: 'Forex Rates', enabled: true, priority: 1 },
-  'defi-tvl': { name: 'DeFi TVL', enabled: true, priority: 2 },
-  'world-clocks': { name: 'World Clocks', enabled: true, priority: 2 },
 };
 
 const FULL_MAP_LAYERS: MapLayers = {
@@ -174,9 +162,7 @@ const TECH_PANELS: Record<string, PanelConfig> = {
   'service-status': { name: 'Service Status', enabled: true, priority: 2 },
   economic: { name: 'Economic Indicators', enabled: true, priority: 2 },
   'tech-readiness': { name: 'Tech Readiness Index', enabled: true, priority: 1 },
-  'macro-signals': { name: 'Market Radar', enabled: true, priority: 2 },
-  'etf-flows': { name: 'BTC ETF Tracker', enabled: true, priority: 2 },
-  stablecoins: { name: 'Stablecoins', enabled: true, priority: 2 },
+  'tech-hubs': { name: 'Tech Hubs', enabled: true, priority: 1 },
   monitors: { name: 'My Monitors', enabled: true, priority: 2 },
 };
 
@@ -296,6 +282,11 @@ const FINANCE_PANELS: Record<string, PanelConfig> = {
   'gcc-investments': { name: 'GCC Investments', enabled: true, priority: 2 },
   gccNews: { name: 'GCC Business News', enabled: true, priority: 2 },
   polymarket: { name: 'Predictions', enabled: true, priority: 2 },
+  'market-radar': { name: 'Market Radar', enabled: true, priority: 1 },
+  'fear-greed': { name: 'Fear & Greed', enabled: true, priority: 1 },
+  'forex-rates': { name: 'Forex Rates', enabled: true, priority: 1 },
+  'defi-tvl': { name: 'DeFi TVL', enabled: true, priority: 2 },
+  'world-clocks': { name: 'World Clocks', enabled: true, priority: 2 },
   monitors: { name: 'My Monitors', enabled: true, priority: 2 },
 };
 
